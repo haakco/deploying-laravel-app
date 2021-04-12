@@ -39,3 +39,5 @@ If you are already comfortable with this, I would recommend just skipping ahead 
 You are new to deploying PHP code to a server.
 
 We'll take you through the quickest and simplest method to get a  server set up, and your code live.
+
+[Follow along here](./Stage_0/README.md)
