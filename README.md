@@ -1,4 +1,4 @@
-# The different stages to learning how to deploy PHP code
+# The different stages to learning how to deploy a Laravel application
 
 ## Intro
 This code covers the different stages in learning how to deploy a PHP app to production.
