@@ -1,5 +1,4 @@
-# Stage 0: The different stages to learning how to deploy PHP code
-
+# Stage 0: Manual stage
 ## Intro
 This stage will cover simply setting up a simple server and deploying your code.
 
