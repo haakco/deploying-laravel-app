@@ -3,6 +3,16 @@
 ## Intro
 This stage will cover simply setting up a simple server and deploying your code.
 
+### Pros
+* Simple
+* Get to learn what for future stages
+* Up and running quickly
+
+### Cons
+* Not repeatable
+* Hard not to have a difference between prod and dev
+* Missing recommended extra programs, e.g. Redis, Postfix, Centralised logging
+
 ## Assumptions
 1. Php code is in git.
 1. You are using MySQL.
@@ -45,7 +55,18 @@ You should now see the virtual server creation page.
 For the example, we are just going to create the smallest server possible, though you may need to select
 a larger one if you need more performance.
 
-Pick the region that is closest to your clients.
+We'll be using Ubuntu 20.10 mainly as we'll be using that in later stages when playing with Kubernetes.
+
+You may also have better luck with 20.04 as it's the long term release version.
+
+Please pick the distribution you know.
+
+Pick the region that is closest to your clients or meets your requirements the best.
+
+To follow [POPIA](https://popia.co.za), I'm using a region that also follows
+[GDPR](https://gdpr-info.eu/).
+
+So I've picked Frankfurt.
 
 Under additional options, select IPv6 and Monitoring.
 
@@ -60,7 +81,7 @@ Now add the hostname with the domain that you chose above as the server hostname
 DigitalOcean will create PTR records pointing back to the servers IP's. Some service use this to
 validate your server, so it's a good idea to get it correct.
 
-Now click the create button to finalize.
+Now click the create button to finalise.
 
 ![DO Create droplet final create](images/DO_droplet_final_create.png)
 
@@ -85,7 +106,7 @@ providers.
 Now using the IP's create both A records, using the IPv4, and AAAA records, using the IPv6, for the following
 entries.
 
-If you are using CloudFlair make sure proxy is disabled for now. 
+If you are using Cloudflare, make sure the proxy is disabled for now.
 
 Click on the orange cloud when adding the entry to make it grey.
 
@@ -94,16 +115,16 @@ Click on the orange cloud when adding the entry to make it grey.
 ![CF Proxy disabled](images/CF_proxy_disabled.png)
 
 * root domain
-  * e.g. ```example.com```
+  *, e.g. ```example.com```
 * ```www.example.com```
 * server name that you picked previously
-  *  e.g. ```srv01.example.com```
+  *, e.g. ```srv01.example.com```
 
 These will allow your users to get to your site on the two most common names.
 
 Later, once you have more than one server, it is easier to connect to the specific server.
 
-Once you have done this, you can test that everything is working by doing a lookup on the domain name.
+Once you have done this, you can test that everything is working by doing a lookup of the domain name.
 
 ```dig example.com```
 
@@ -233,7 +254,7 @@ apt install -y \
   python3-certbot-nginx
 ```
 
-With all the ppa's added just run a dist-upgrade to make sure everything is updated.
+With all the PPA's added, just run a dist-upgrade to make sure everything is updated.
 ```bash
 apt -y dist-upgrade
 apt -y autoremove
@@ -271,7 +292,7 @@ server {
 }
 ```
 
-To make life easier you can just run the following command.
+To make life easier, you can just run the following command.
 
 ```bash
 cat > /etc/nginx/sites-enabled/default <<- EOM
@@ -317,23 +338,23 @@ Then restart Nginx ```service restart nginx```.
 
 ### Step 3.4: Generating the SSL certificate
 
-As we have already installed certbot and have the DNS pointing at the server it quiet simple
-to get the certificate generated and setup.
+As we have already installed certbot and have the DNS pointing at the server, it quite simple
+to get the certificate generated and set up.
 
-First confirm the nginx is up by typing your domain into the browser with http. (https won't
+First, confirm the Nginx is up by typing your domain into the browser with HTTP. (HTTPS won't
 work yet)
 
-e.g Go to http://www.example.com
+e.g. Go to http://www.example.com
 
-You should get the text you added the index.html file.
+You should get the text you added to the index.html file.
 
 ```nginx
 index index.html index.htm index.php;
 ```
 
-Ok we are now going to use certbot to generate our certificates and enable ssl.
+Ok, we are now going to use certbot to generate our certificates and enable SSL.
 
-You'll need to provide it an email address that it can notify you expiring certs and the ```www```
+You'll need to provide it with an email address that it can notify you of expiring certs and the ```www```
 domain.
 
 e.g. ```www.example.com```
@@ -344,25 +365,24 @@ You also want to enable the redirect.
 certbot --nginx -d www.example.com -d example.com
 ```
 
-Once you are complete you can then restart your nginx server to apply the changes.
+Once you are complete, you can then restart your Nginx server to apply the changes.
 
 ```bash
 service nginx restart
 ```
 
-If you now reload the web page. It should redirect you to https and you should get 
+If you now reload the web page. It should redirect you to HTTPS, and you should get
 a lock in the browser.
 
-If you now edit the ```/etc/nginx/sites-enabled/default``` file you'll see that it's been updated
-with the certificate information.
+If you now edit the ```/etc/nginx/sites-enabled/default``` file, you'll see that the file has the certificate information.
 
-We are quite close to being finished.
+We are pretty close to being finished.
 
 ### Step 3.5: Setup database credentials
 
 Decide on the user, password and database name you would like.
 
-For this we'll be using db_example,user_example and password_example for all three but please pick a more secure password.
+For this, we'll be using db_example,user_example and password_example for all three but please pick a more secure password.
 
 Then run the following replacing example with what you have picked.
 
@@ -377,9 +397,9 @@ echo "grant all privileges on db_example to user_example;" | sudo -u postgres ps
 
 Now for the final steps.
 
-We just need to install composer and then clone the app and do final setup.
+We need to install Composer and then clone the app and do the final setup.
 
-To start let's install composer
+To start, let's install Composer.
 
 ```bash
 php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
@@ -387,20 +407,19 @@ php composer-setup.php --install-dir=/bin --filename=composer
 php -r "unlink('composer-setup.php');"
 ```
 
-We can confirm its working and available to the www-data user.
+We can confirm it's working and available to the www-data user.
 
-The www-data user is the user that nginx is running as.
+The www-data user is the user that Nginx is running as.
 
-You never want to run composer as root if you can.
+You never want to run Composer as root if you can.
 
 ```bash
 sudo -s -u www-data composer
 ```
 
-Next we want to git clone our application to the html directory.
+Next, we want to git clone our application to the HTML directory.
 
-Before we do that we need to generate an ssh key pair for the server. This is so we can 
-add the public key to GitHub as a deployment key.
+Before we do that, we need to generate an ssh key pair for the server. GitHub requires the key as a deployment key.
 
 To generate a key run the following:
 
@@ -408,7 +427,7 @@ To generate a key run the following:
 ssh-keygen -t ed25519 -a 100 -f ~/.ssh/id_ed25519 -q -N ""
 ```
 
-Just to make life simpler add github to known hosts
+To make life simpler, add GitHub to known hosts.
 
 ```bash
 ssh-keyscan github.com >> ~/.ssh/known_hosts
@@ -428,18 +447,18 @@ This is under ```Settings``` -> ```Deploy keys```
 
 ![GH deploy keys menu](images/GH_deploy_keys_menu.png)
 
-Don't give it right access.
+Please don't give it write access.
 
-Now remove the ```/var/www/site``` directory as we are going to clone the repository over it.
-The clone will complain if the folder is there
+Now remove the ```/var/www/site``` directory as we will clone the repository over it.
+The clone will complain if the folder is there.
 
 ```bash
 rm -rf /var/www/site
 ```
 
-For this example we are going to deploy ```https://github.com/thedevdojo/wave```.
+For this example, we are going to deploy ```https://github.com/thedevdojo/wave```.
 
-We'll also need to install git
+We'll also need to install git.
 
 ```git clone https://github.com/thedevdojo/wave /var/www/site```
 
@@ -507,5 +526,3 @@ sudo su -p -l www-data -s /bin/bash -c "composer install"
 sudo su -p -l www-data -s /bin/bash -c "php artisan key:generate"
 sudo su -p -l www-data -s /bin/bash -c "php artisan migrate"
 ```
-
-

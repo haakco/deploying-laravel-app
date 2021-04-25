@@ -1,7 +1,10 @@
 #!/bin/bash
 apt update
-apt dist-upgrade -y
-apt autoremove -y
+apt -y \
+  dist-upgrade \
+  -o Dpkg::Options::=--force-confdef \
+  -o Dpkg::Options::=--force-confnew
+apt -y autoremove
 reboot
 
 # Steps to add Laravel requirements
@@ -9,7 +12,6 @@ reboot
 ## Make sure we are using the latest postgres
 echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list
 apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 7FCC7D46ACCC4CF8
-
 apt update
 
 apt install -y postgresql postgresql-client postgresql-contrib

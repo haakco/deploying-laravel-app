@@ -36,9 +36,9 @@ If you are already comfortable with this, I would recommend just skipping ahead 
    [LetsEncrypt](https://community.letsencrypt.org/t/dns-providers-who-easily-integrate-with-lets-encrypt-dns-validation/86438)
 
 
-### Stage 0
+### [Stage 0](./Stage_0/README.md)
 You are new to deploying PHP code to a server.
 
 We'll take you through the quickest and simplest method to get a  server set up, and your code live.
 
-[Follow along here](./Stage_0/README.md)
+[Follow along here Stage 0](./Stage_0/README.md)
