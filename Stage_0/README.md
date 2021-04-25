@@ -12,23 +12,23 @@ This stage will cover simply setting up a simple server and deploying your code.
 * Hard not to have a difference between prod and dev
 * Missing recommended extra programs, e.g. Postfix, Centralised logging
 * Single point of failure (Only one server)
-* No documentation on how the server was set up
+* No documentation on how exactly to set future servers up
 
 ## Assumptions
 1. Php code is in git.
 1. You are using PostgreSQL.
-    1. If not, replace the PostgreSQL step with your DB of choice.
+1. If not, replace the PostgreSQL step with your DB of choice.
 1. You have a server.
 1. In this example and future ones, we'll be deploying to [DigitalOcean](https://m.do.co/c/179a47e69ec8)
    but the steps should mostly work with any servers.
 1. The server is running Ubuntu 20.04
 1. You have SSH key pair.
-    1. Needed to log into your server securely.
+1. Needed to log into your server securely.
 1. You have a Domain Name, and you can add entries to point to the server.
-    1. We'll be using example.com here. Just replace that with your domain of choice.
-1. For DNS I'll be using Cloudflare in these examples.
-    1. I would recommend using a DNS provider that supports [Terraform](https://www.terraform.io/) and
-     [LetsEncrypt](https://community.letsencrypt.org/t/dns-providers-who-easily-integrate-with-lets-encrypt-dns-validation/86438)
+1. We'll be using example.com here. Just replace that with your domain of choice.
+1. For DNS, I'll be using Cloudflare in these examples.
+1. I would recommend using a DNS provider that supports [Terraform](https://www.terraform.io/) and
+   [LetsEncrypt](https://community.letsencrypt.org/t/dns-providers-who-easily-integrate-with-lets-encrypt-dns-validation/86438)
 
 
 ## Step 1: Get the information needed
@@ -132,7 +132,7 @@ Also, confirm that the PTR record exists. (This should match the server name you
 
 ```dig -x <IP>```
 
-## Step 3: Setup the server
+## Step 4: Setup the server
 
 Ok, first ssh to the server as the root user.
 
@@ -146,11 +146,11 @@ You'll use this file at a later stage when we start automating the server setup.
 
 It's also good to have a record of exactly your server is set up.
 
-An exmaple can be found at this link:
+An example can be found at this link:
 
 [setupCommands.sh](./setupCommands.sh)
 
-### Step 3.1: First update the server
+### Step 4.1: First update the server
 
 The following will make sure the server is fully updated and rebooted.
 
@@ -176,7 +176,7 @@ apt -y autoremove
 reboot
 ```
 
-### Step 3.2: Install the basics to run Laravel
+### Step 4.2: Install the basics to run Laravel
 
 I've separated the command to make them more readable and explain what each is doing.
 
@@ -186,7 +186,7 @@ Though you can run them as once command
 
 Make sure we will get the latest PostgreSQL
 ```bash
-echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list
+echo "deb https://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list
 apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 7FCC7D46ACCC4CF8
 apt update
 ```
@@ -260,7 +260,7 @@ apt -y dist-upgrade
 apt -y autoremove
 ```
 
-### Step 3.3: Configure Nginx to use PHP
+### Step 4.3: Configure Nginx to use PHP
 
 Now edit the file ```/etc/nginx/sites-enabled/default```
 
@@ -336,9 +336,9 @@ chown -R www-data: /var/www/site/public
 
 Then restart Nginx ```service restart nginx```.
 
-### Step 3.4: Generating the SSL certificate
+### Step 4.4: Generating the SSL certificate
 
-As we have already installed certbot and have the DNS pointing at the server, it quite simple
+As we have already installed certbot and have the DNS pointing at the server, it is pretty simple
 to get the certificate generated and set up.
 
 First, confirm the Nginx is up by typing your domain into the browser with HTTP. (HTTPS won't
@@ -371,14 +371,14 @@ Once you are complete, you can then restart your Nginx server to apply the chang
 service nginx restart
 ```
 
-If you now reload the web page. It should redirect you to HTTPS, and you should get
+You can now reload the web page. It should redirect you to HTTPS, and you should get
 a lock in the browser.
 
 If you now edit the ```/etc/nginx/sites-enabled/default``` file, you'll see that the file has the certificate information.
 
 We are pretty close to being finished.
 
-### Step 3.5: Setup database credentials
+### Step 4.5: Setup database credentials
 
 Decide on the user, password and database name you would like.
 
@@ -393,7 +393,7 @@ echo "alter user user_example with encrypted password 'password_example';" | sud
 echo "grant all privileges on database db_example to user_example;" | sudo -u postgres psql
 ```
 
-### Step 3.6: Deploying your application - Final Step
+### Step 4.6: Deploying your application - Final Step
 
 Now for the final steps.
 

@@ -30,3 +30,5 @@ This stage will cover simply setting up a simple server and deploying your code.
 1. For DNS I'll be using Cloudflare in these examples.
     1. I would recommend using a DNS provider that supports [Terraform](https://www.terraform.io/) and
    [LetsEncrypt](https://community.letsencrypt.org/t/dns-providers-who-easily-integrate-with-lets-encrypt-dns-validation/86438)
+
+## Steps 1-2
