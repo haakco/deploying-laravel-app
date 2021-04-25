@@ -1,0 +1,33 @@
+---
+- name: Add an PostgreSQL apt key
+  ansible.builtin.apt_key:
+    keyserver: keyserver.ubuntu.com
+    id: 7FCC7D46ACCC4CF8
+
+- name: Add postgresql repository
+  ansible.builtin.apt_repository:
+    repo: "deb https://apt.postgresql.org/pub/repos/apt/ {{ ansible_distribution_release }}-pgdg main"
+    state: present
+    filename: pgdg.list
+
+- name: Install PostgresSQL and Redis
+  ansible.builtin.apt:
+    update_cache: yes
+    cache_valid_time: 600
+    name:
+      - postgresql-13
+      - postgresql-client
+      - redis
+
+- name: Copy db creation script
+  ansible.builtin.copy:
+    src: createDb.sh
+    dest: /root/createDb.sh
+    owner: root
+    group: root
+    mode: '0744'
+
+- name: Create and setup db
+  ansible.builtin.command:
+    cmd: /root/createDb.sh db_example user_example password_example
+    creates: /root/db_created

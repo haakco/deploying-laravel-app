@@ -1,0 +1,6 @@
+---
+- hosts: web
+  roles:
+    - nginx_php
+  become: true
+  gather_facts: true

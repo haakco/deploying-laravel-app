@@ -1,0 +1,7 @@
+---
+- name: Update on debian-based distros
+  apt:
+    ansible.builtin.apt: dist
+    cache_valid_time: 600
+    update_cache: yes
+    autoremove: yes

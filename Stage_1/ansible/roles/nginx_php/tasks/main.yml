@@ -1,0 +1,55 @@
+---
+- name: Add nginx stable repository from PPA and install its signing key on Ubuntu target
+  ansible.builtin.apt_repository:
+    repo: 'ppa:nginx/stable'
+
+- name: Add Onreg PHP PPA
+  ansible.builtin.apt_repository:
+    repo: 'ppa:ondrej/php'
+
+- name: Install NGINX
+  ansible.builtin.apt:
+    update_cache: yes
+    cache_valid_time: 600
+    name:
+      - nginx
+
+- name: Install PHP and PHP Modules
+  ansible.builtin.apt:
+    update_cache: yes
+    cache_valid_time: 600
+    name:
+      - php7.4
+      - php7.4-cli
+      - php7.4-fpm
+      - php7.4-bcmath
+      - php7.4-common
+      - php7.4-curl
+      - php7.4-dev
+      - php7.4-gd
+      - php7.4-gmp
+      - php7.4-grpc
+      - php7.4-igbinary
+      - php7.4-imagick
+      - php7.4-intl
+      - php7.4-mcrypt
+      - php7.4-mbstring
+      - php7.4-mysql
+      - php7.4-opcache
+      - php7.4-pcov
+      - php7.4-pgsql
+      - php7.4-protobuf
+      - php7.4-redis
+      - php7.4-soap
+      - php7.4-sqlite3
+      - php7.4-ssh2
+      - php7.4-xml
+      - php7.4-zip
+
+- name: Install CertBot
+  ansible.builtin.apt:
+    update_cache: yes
+    cache_valid_time: 600
+    name:
+      - certbot
+      - python3-certbot-nginx
