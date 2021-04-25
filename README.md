@@ -35,3 +35,8 @@ You are new to deploying PHP code to a server.
 We'll take you through the quickest and simplest method to get a  server set up, and your code live.
 
 [Follow along here Stage 0](./Stage_0/README.md)
+
+### [Stage 1](./Stage_1/README.md)
+Ok we are now going to step up the complexity and automate the setup of the server with ansible.
+
+[Follow along here Stage 1](./Stage_1/README.md)
