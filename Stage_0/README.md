@@ -12,6 +12,8 @@ This stage will cover simply setting up a simple server and deploying your code.
 * Not repeatable
 * Hard not to have a difference between prod and dev
 * Missing recommended extra programs, e.g. Redis, Postfix, Centralised logging
+* Single point of failure (Only one server)
+* No documentation on how the server was setup
 
 ## Assumptions
 1. Php code is in git.
@@ -55,9 +57,7 @@ You should now see the virtual server creation page.
 For the example, we are just going to create the smallest server possible, though you may need to select
 a larger one if you need more performance.
 
-We'll be using Ubuntu 20.10 mainly as we'll be using that in later stages when playing with Kubernetes.
-
-You may also have better luck with 20.04 as it's the long term release version.
+We'll be using Ubuntu 20.04 mainly as it's the long term release version.
 
 Please pick the distribution you know.
 
@@ -276,7 +276,7 @@ server {
   index index.html index.htm index.php;
 
   server_name _;
-  
+
   location / {
     try_files $uri $uri/ =404;
   }
@@ -390,10 +390,10 @@ Then run the following replacing example with what you have picked.
 sudo -s -u postgres createuser user_example
 sudo -s -u postgres createdb db_example
 echo "alter user user_example with encrypted password 'password_example';" | sudo -u postgres psql
-echo "grant all privileges on db_example to user_example;" | sudo -u postgres psql
+echo "grant all privileges on database db_example to user_example;" | sudo -u postgres psql
 ```
 
-### Step 3.4: Deploying your application
+### Step 3.6: Deploying your application - Final Step
 
 Now for the final steps.
 
@@ -458,7 +458,7 @@ rm -rf /var/www/site
 
 For this example, we are going to deploy ```https://github.com/thedevdojo/wave```.
 
-We'll also need to install git.
+You should replace the clone with your git repository.
 
 ```git clone https://github.com/thedevdojo/wave /var/www/site```
 
@@ -520,9 +520,19 @@ Change the ownership of the files.
 chown -R www-data: /var/www/site
 ```
 
+Now run your composer install and migrate switching to the Nginx user.
+
 ```bash
 cd  /var/www/site
-sudo su -p -l www-data -s /bin/bash -c "composer install"
-sudo su -p -l www-data -s /bin/bash -c "php artisan key:generate"
-sudo su -p -l www-data -s /bin/bash -c "php artisan migrate"
+sudo su -p -l www-data -s /bin/bash -c "cd /var/www/site && composer install"
+sudo su -p -l www-data -s /bin/bash -c "cd /var/www/site && php artisan key:generate"
+sudo su -p -l www-data -s /bin/bash -c "cd /var/www/site && php artisan migrate"
 ```
+
+Done :)
+
+You should now be able to open your URL and see your site.
+
+In the next stage, we will go over how to use Ansible to automate all the steps above.
+
+That way, your deployment becomes repeatable, and the exact setup steps get documented.
