@@ -1,0 +1,12 @@
+---
+- name: Set date.timezone for CLI
+  lineinfile:
+    dest: /etc/php/7.4/cli/php.ini
+    regexp: "date.timezone ="
+    line: "date.timezone = UTC"
+
+- name: Set date.timezone for FPM
+  lineinfile:
+    dest: /etc/php/7.4/fpm/php.ini
+    regexp: "date.timezone ="
+    line: "date.timezone = UTC"

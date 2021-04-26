@@ -53,3 +53,65 @@
     name:
       - certbot
       - python3-certbot-nginx
+
+- name: create letsencrypt directory
+  ansible.builtin.file:
+    name: /var/www/letsencrypt
+    state: directory
+
+- name: Remove default nginx config
+  file:
+    name: /etc/nginx/sites-enabled/default
+    state: absent
+
+- name: Create directory for site
+  ansible.builtin.file:
+    name: /var/www/site/public
+    state: directory
+
+- name: Add index file to test that everything is working
+  ansible.builtin.template:
+    src: templates/index.html.j2
+    dest: /var/www/site/public/index.html
+
+- name: Install system nginx config
+  template:
+    src: templates/nginx.conf.j2
+    dest: /etc/nginx/nginx.conf
+
+- name: Install nginx site for letsencrypt requests
+  ansible.builtin.template:
+    src: templates/nginx-http.j2
+    dest: /etc/nginx/sites-enabled/http
+
+- name: Reload nginx to activate letsencrypt site
+  ansible.builtin.service:
+    name: nginx
+    state: restarted
+
+- name: Create letsencrypt certificate
+  ansible.builtin.shell: letsencrypt certonly -n --webroot -w /var/www/letsencrypt -m {{ letsencrypt_email }} --agree-tos -d {{ domain_name }} -d www.{{ domain_name }}
+  args:
+    creates: /etc/letsencrypt/live/{{ domain_name }}
+
+- name: Generate dhparams
+  ansible.builtin.shell: openssl dhparam -out /etc/nginx/dhparams.pem 2048
+  args:
+    creates: /etc/nginx/dhparams.pem
+
+- name: Install nginx site for specified site
+  ansible.builtin.template:
+    src: templates/nginx-le.j2
+    dest: /etc/nginx/sites-enabled/le
+
+- name: Reload nginx to activate specified site
+  ansible.builtin.service:
+    name: nginx
+    state: restarted
+
+- name: Add letsencrypt cronjob for cert renewal
+  ansible.builtin.cron:
+    name: letsencrypt_renewal
+    special_time: weekly
+    job: letsencrypt --renew certonly -n --webroot -w /var/www/letsencrypt -m {{ letsencrypt_email }} --agree-tos -d {{ domain_name }} && service nginx reload
+

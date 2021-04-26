@@ -105,6 +105,9 @@ Finally, we want ssh to use the root user.
 You can do this by either setting the variable by host ```ansible_user=root``` or by setting the variable for all host
 by using ```[all:vars]```.
 
+While we at it we're allso going to add variables specifying our domain, and the email that we want to register for 
+LetsEncrypt.
+
 So our ```hosts.ini``` finally becomes.
 
 ```ini
@@ -112,6 +115,8 @@ srv01 ansible_ssh_host=srv01.example.com
 
 [all:vars]
 ansible_user=root
+domain_name=example.com
+letsencrypt_email=cert@example.com
 
 [web]
 srv01
@@ -424,4 +429,106 @@ Next we'll install the required programs.
       - certbot
       - python3-certbot-nginx
 ```
+
+Next we need to get nginx configure and generate certificates.
+
+This time round we are going to do it manually as it gives us more control over how ssl and nginx is configured.
+
+We'll first make sure the directories needed exist and that we remove the default nginx site config.
+
+```yaml
+- name: create letsencrypt directory
+  ansible.builtin.file:
+    name: /var/www/letsencrypt
+    state: directory
+
+- name: Remove default nginx config
+  ansible.builtin.file:
+    name: /etc/nginx/sites-enabled/default
+    state: absent
+```
+
+Next we are going to use ansible templates as apposed to just coping files over.
+
+This allows us to use variables in the config.
+
+We'll replace the default nginx.conf with one that some more tuning it.
+
+We'll then set up the basic http site that certbot needs to validate its certificate. We'll also generate dhparams
+to increase the ssl security.
+
+We'll then generate the certificates, update nginx to the final config for Larval.
+
+Finally, we'll set certbot to check if it should update the certificates every week.
+
+I'm not going to go over all the NGINX configs but you can see the templates here to see what they are all doing.
+
+I would also recommend going to look at Mozilla ssl [config recommendations here](https://ssl-config.mozilla.org/#server=nginx&version=1.17.7&config=intermediate&openssl=1.1.1d&guideline=5.6).  
+
+```yaml
+- name: Create directory for site
+  ansible.builtin.file:
+    name: /var/www/site/public
+    state: directory
+
+- name: Add index file to test that everything is working
+  ansible.builtin.template:
+    src: templates/index.html.j2
+    dest: /var/www/site/public/index.html
+    
+- name: Install system nginx config
+  template:
+    src: templates/nginx.conf.j2
+    dest: /etc/nginx/nginx.conf
+
+- name: Install nginx site for letsencrypt requests
+  ansible.builtin.template:
+    src: templates/nginx-http.j2
+    dest: /etc/nginx/sites-enabled/http
+
+- name: Reload nginx to activate letsencrypt site
+  ansible.builtin.service:
+    name: nginx
+    state: restarted
+
+- name: Create letsencrypt certificate
+  ansible.builtin.shell: letsencrypt certonly -n --webroot -w /var/www/letsencrypt -m {{ letsencrypt_email }} --agree-tos -d {{ domain_name }} -d www.{{ domain_name }}
+  args:
+    creates: /etc/letsencrypt/live/{{ domain_name }}
+
+- name: Generate dhparams
+  ansible.builtin.shell: openssl dhparam -out /etc/nginx/dhparams.pem 2048
+  args:
+    creates: /etc/nginx/dhparams.pem
+
+- name: Install nginx site for specified site
+  ansible.builtin.template:
+    src: templates/nginx-le.j2
+    dest: /etc/nginx/sites-enabled/le
+
+- name: Reload nginx to activate specified site
+  ansible.builtin.service:
+    name: nginx
+    state: restarted
+
+- name: Add letsencrypt cronjob for cert renewal
+  ansible.builtin.cron:
+    name: letsencrypt_renewal
+    special_time: weekly
+    job: letsencrypt --renew certonly -n --webroot -w /var/www/letsencrypt -m {{ letsencrypt_email }} --agree-tos -d {{ domain_name }} && service nginx reload
+```
+
+The following command will run the playbook.
+
+```bash
+ansible-playbook -i ./hosts.ini ./nginx_php.yml
+```
+
+You should now be able to get the test page at https://example.com
+
+#### Do some PHP Tuning
+
+Last time we didn't tune any of the php.ini files.
+
+This time lets do some updated to make the server work better.
 
