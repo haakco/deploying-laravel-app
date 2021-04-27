@@ -64,7 +64,7 @@
 
 - name: Make sure the laravle directory is owned by www-data
   ansible.builtin.file:
-    path: /var/www/site
+    path: /var/www
     state: directory
     recurse: yes
     owner: www-data
@@ -77,11 +77,11 @@
     chdir: /var/www/site
     cmd: composer install
 
-- name: Composer install
+- name: Run any database migrations
   become: yes
   become_user: www-data
-  ansible.builtin.command:
+  ansible.builtin.shell:
     chdir: /var/www/site
-    cmd: artisan migrate
+    cmd: yes | php artisan migrate
 
 
