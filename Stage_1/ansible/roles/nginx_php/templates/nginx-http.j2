@@ -4,10 +4,11 @@ server {
 
   server_name _;
 
-  location /.well-known/acme-challenge {
+  location ^~ /.well-known/acme-challenge/ {
     root /var/www/letsencrypt;
-    try_files $uri $uri/ =404;
   }
 
-  return 301 https://$host$request_uri;
+  location / {
+    return 301 https://$host$request_uri;
+  }
 }

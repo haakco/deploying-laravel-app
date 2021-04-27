@@ -15,14 +15,6 @@
     path: /root/.ssh/connections
     state: directory
 
-- name: Ensure github.com is a known host
-  ansible.builtin.lineinfile:
-    dest: /root/.ssh/known_hosts
-    create: yes
-    state: present
-    line: "{{ lookup('pipe', 'ssh-keyscan -t rsa github.com') }}"
-    regexp: "^github\\.com"
-
 - name: Create config file for root ssh
   ansible.builtin.template:
     src: ssh_config.j2
@@ -31,19 +23,19 @@
     group: root
     mode: 0640
 
+- name: Ensure github.com is a known host
+  ansible.builtin.lineinfile:
+    dest: /root/.ssh/known_hosts
+    create: yes
+    state: present
+    line: "{{ lookup('pipe', 'ssh-keyscan -t rsa github.com') }}"
+    regexp: "^github\\.com"
+
 - name: Remove directory for clone
   ansible.builtin.file:
     path: /var/www/site
     state: absent
   when: bootstrap | default(false)
-
-- name: Copy env file over
-  ansible.builtin.template:
-    src: laravel_env.j2
-    dest: "/var/www/site/.env"
-    owner: www-data
-    group: www-data
-    mode: 0640
 
 - name: Git checkout
   ansible.builtin.git:

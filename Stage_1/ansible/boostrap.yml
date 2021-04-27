@@ -7,5 +7,6 @@
     - postgresql
     - nginx_php
     - php_tuning
+    - deployment
   become: true
   gather_facts: true
