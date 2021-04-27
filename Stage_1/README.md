@@ -678,4 +678,77 @@ Next we want to generate our keys. (These are explicitly not added to git just t
 ssh-keygen -t ed25519 -a 100 -f ./roles/deployment/files/deploy_id_ed25519 -q -N ""
 ```
 
+Remember to now copy the public version to the github repository.
+
+Ok now we copy the files over and add git to the known hosts.
+
+```yaml
+- name: Copy ssh keys to server
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: "/root/.ssh/{{ item }}"
+    owner: root
+    group: root
+    mode: '0600'
+  with_items:
+    - deploy_id_ed25519
+    - deploy_id_ed25519.pub
+
+- name: Ensure github.com is a known host
+  lineinfile:
+    dest: /root/.ssh/known_hosts
+    create: yes
+    state: present
+    line: "{{ lookup('pipe', 'ssh-keyscan -t rsa github.com') }}"
+    regexp: "^github\\.com"
+```
+
+We are going to change one this compared to Stage 0 now. 
+
+With GitHub, you can only use a deployment key in one repository. The simplest way to solve this problem is
+to create a ssh config that alias GitHub to a name per repository specifying a unique key for that alias.
+
+So we are going to do exactly that with our new key. 
+
+Bellow is the example of the ssh config will look like.
+
+```ssh-config
+Host example-alias github.com
+  Hostname github.com
+  IdentityFile /root/.ssh/deploy_id_ed25519
+```
+
+And we will set it via.
+
+```yaml
+- name: Create config file for root ssh
+  template:
+    src: ssh_config.j2
+    dest: "/root/.ssh/config"
+    owner: root
+    group: root
+    mode: 0640
+```
+
+You use it by just replacing the ```github.com``` in your clone command with ```example-alias```.
+
+Now lest clone our repository like we did in Stage 0.
+
+```yaml
+- name: Remove directory for clone
+  ansible.builtin.file:
+    path: /var/www/site
+    state: absent
+
+- name: Git checkout
+  ansible.builtin.git:
+    repo: 'git@example-alias:thedevdojo/wave.git'
+    dest: /var/www/site
+    clone: yes
+    depth: 1
+    update: yes
+    force: yes
+```
+
+
 

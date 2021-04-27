@@ -52,7 +52,7 @@
     url: https://getcomposer.org/installer
 
 - name: Download and install Composer
-  shell: php /usr/src/composer-setup.php --install-dir=/bin --filename=composer
+  ansible.builtin.shell: php /usr/src/composer-setup.php --install-dir=/bin --filename=composer
   args:
     chdir: /usr/src/
     creates: /bin/composer

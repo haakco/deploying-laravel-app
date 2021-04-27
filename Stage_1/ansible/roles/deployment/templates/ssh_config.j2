@@ -1,0 +1,17 @@
+Host *
+  ControlMaster auto
+  ControlPath ~/.ssh/connections/%r_%h_%p
+
+  # Get rid of SSH connection delays
+  GSSAPIAuthentication no
+
+  ServerAliveInterval 15
+  ServerAliveCountMax 4
+
+  ControlPersist 10m
+  IdentityFile ~/.ssh/id_rsa
+
+Host example-alias github.com
+  Hostname github.com
+  IdentityFile /root/.ssh/deploy_id_ed25519
+
