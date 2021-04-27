@@ -3,5 +3,7 @@
   roles:
     - upgrade_server
     - postgresql
+    - nginx_php
+    - php_tuning
   become: true
   gather_facts: true

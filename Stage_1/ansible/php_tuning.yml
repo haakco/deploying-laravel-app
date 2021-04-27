@@ -1,0 +1,6 @@
+---
+- hosts: web
+  roles:
+    - php_tuning
+  become: true
+  gather_facts: true

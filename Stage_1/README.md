@@ -105,7 +105,7 @@ Finally, we want ssh to use the root user.
 You can do this by either setting the variable by host ```ansible_user=root``` or by setting the variable for all host
 by using ```[all:vars]```.
 
-While we at it we're allso going to add variables specifying our domain, and the email that we want to register for 
+While we at it we're also going to add variables specifying our domain, php version, and the email that we want to register for 
 LetsEncrypt.
 
 So our ```hosts.ini``` finally becomes.
@@ -117,6 +117,7 @@ srv01 ansible_ssh_host=srv01.example.com
 ansible_user=root
 domain_name=example.com
 letsencrypt_email=cert@example.com
+php_ver=7.4
 
 [web]
 srv01
@@ -394,32 +395,32 @@ Next we'll install the required programs.
     update_cache: yes
     cache_valid_time: 600
     name:
-      - php7.4 
-      - php7.4-cli 
-      - php7.4-fpm
-      - php7.4-bcmath
-      - php7.4-common 
-      - php7.4-curl
-      - php7.4-dev
-      - php7.4-gd 
-      - php7.4-gmp 
-      - php7.4-grpc
-      - php7.4-igbinary 
-      - php7.4-imagick 
-      - php7.4-intl
-      - php7.4-mcrypt 
-      - php7.4-mbstring 
-      - php7.4-mysql
-      - php7.4-opcache
-      - php7.4-pcov 
-      - php7.4-pgsql 
-      - php7.4-protobuf
-      - php7.4-redis
-      - php7.4-soap 
-      - php7.4-sqlite3 
-      - php7.4-ssh2
-      - php7.4-xml
-      - php7.4-zip
+      - php{{ php_ver }}
+      - php{{ php_ver }}-cli
+      - php{{ php_ver }}-fpm
+      - php{{ php_ver }}-bcmath
+      - php{{ php_ver }}-common
+      - php{{ php_ver }}-curl
+      - php{{ php_ver }}-dev
+      - php{{ php_ver }}-gd
+      - php{{ php_ver }}-gmp
+      - php{{ php_ver }}-grpc
+      - php{{ php_ver }}-igbinary
+      - php{{ php_ver }}-imagick
+      - php{{ php_ver }}-intl
+      - php{{ php_ver }}-mcrypt
+      - php{{ php_ver }}-mbstring
+      - php{{ php_ver }}-mysql
+      - php{{ php_ver }}-opcache
+      - php{{ php_ver }}-pcov
+      - php{{ php_ver }}-pgsql
+      - php{{ php_ver }}-protobuf
+      - php{{ php_ver }}-redis
+      - php{{ php_ver }}-soap
+      - php{{ php_ver }}-sqlite3
+      - php{{ php_ver }}-ssh2
+      - php{{ php_ver }}-xml
+      - php{{ php_ver }}-zip
 
 - name: Install CertBot
   ansible.builtin.apt:
@@ -428,6 +429,22 @@ Next we'll install the required programs.
     name:
       - certbot
       - python3-certbot-nginx
+```
+
+While we are installing php let's also get composer installed.
+
+```yaml
+- name: Download composer installer
+  get_url:
+    dest: /usr/src/composer-setup.php
+    url: https://getcomposer.org/installer
+
+- name: Download and install Composer
+  shell: php /usr/src/composer-setup.php --install-dir=/bin --filename=composer
+  args:
+    chdir: /usr/src/
+    creates: /bin/composer
+    warn: false
 ```
 
 Next we need to get nginx configure and generate certificates.
@@ -530,5 +547,135 @@ You should now be able to get the test page at https://example.com
 
 Last time we didn't tune any of the php.ini files.
 
-This time lets do some updated to make the server work better.
+This time we are going to make some simple changes to show how to do this.
+
+Once again we are going to create a seperate role and playbook for this.
+
+You can see the complete versions at  ```./roles/php_tuning/tasks/main.yml``` and ```./php_tuning.yml```.
+
+We are going to use the [ansible.builtin.lineinfile](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/lineinfile_module.html) 
+to make the changes.
+
+Let's start with setting the timezone. 
+
+As Ubuntu has separate php.ini files for cli and for fpm. You will need to update both.
+
+```yaml
+- name: Set date.timezone for CLI
+  ansible.builtin.lineinfile:
+    dest: /etc/php/{{ php_ver }}/cli/php.ini
+    regexp: "^#?date.timezone ="
+    line: "date.timezone = UTC"
+    backrefs: yes
+    state: present
+
+- name: Set date.timezone for FPM
+  ansible.builtin.lineinfile:
+    dest: /etc/php/{{ php_ver }}/fpm/php.ini
+    regexp: "^#?date.timezone ="
+    line: "date.timezone = UTC"
+    backrefs: yes
+    state: present
+```
+
+There many setting we may want to tune in the file. Rather than do a command per setting we can rather loop
+through a list to change multiple settings. See bellow for the reset of the settings changed.
+
+I've only shown it for the cli settings, but the role does it for fpm as well.
+
+You can look at the [./roles/php_tuning/tasks/main.yml](./ansible/roles/php_tuning/tasks/main.yml) files to
+see example of other things you may want to change.
+
+```yaml
+- name: Change mulitple setting for php.ini for cli
+  lineinfile:
+    dest: /etc/php/{{ php_ver }}/cli/php.ini
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    backrefs: yes
+    state: present
+  with_items:
+    - { regexp: '^#?upload_max_filesize =', line: 'upload_max_filesize = 128M' }
+    - { regexp: '^#?post_max_size =', line: 'post_max_size = 128M' }
+    - { regexp: '^#?default_charset =', line: 'default_charset = "UTF-8"' }
+    - { regexp: '^#?memory_limit =', line: 'memory_limit = 1G' }
+    - { regexp: '^#?max_execution_time =', line: 'max_execution_time = 600' }
+    - { regexp: '^#?max_input_time =', line: 'max_input_time = 600' }
+    - { regexp: '^#?default_socket_timeout =', line: 'default_socket_timeout = 600' }
+    - { regexp: '^#?realpath_cache_size =', line: 'realpath_cache_size = 16384K' }
+    - { regexp: '^#?realpath_cache_ttl =', line: 'realpath_cache_ttl = 7200' }
+    - { regexp: '^#?intl.default_locale =', line: 'intl.default_locale = en' }
+    - { regexp: '^#?expose_php =', line: 'expose_php = Off' }
+    - { regexp: '^#?opcache.enable =', line: 'opcache.enable = 1' }
+    - { regexp: '^#?opcache.enable_cli =', line: 'opcache.enable_cli = 1' }
+    - { regexp: '^#?opcache.memory_consumption =', line: 'opcache.memory_consumption = 128' }
+    - { regexp: '^#?opcache.interned_strings_buffer =', line: 'opcache.interned_strings_buffer = 16' }
+    - { regexp: '^#?opcache.max_accelerated_files =', line: 'opcache.max_accelerated_files = 16229' }
+    - { regexp: '^#?opcache.revalidate_path =', line: 'opcache.revalidate_path = 1' }
+    - { regexp: '^#?opcache.fast_shutdown =', line: 'opcache.fast_shutdown = 0' }
+    - { regexp: '^#?opcache.enable_file_override =', line: 'opcache.enable_file_override = 0' }
+    - { regexp: '^#?opcache.validate_timestamps =', line: 'opcache.validate_timestamps = 1' }
+    - { regexp: '^#?opcache.revalidate_freq =', line: 'opcache.revalidate_freq = 30' }
+    - { regexp: '^#?opcache.save_comments =', line: 'opcache.save_comments = 1' }
+    - { regexp: '^#?opcache.load_comments =', line: 'opcache.load_comments = 1' }
+    - { regexp: '^#?opcache.dups_fix =', line: 'opcache.dups_fix = 1' }
+    - { regexp: '^#?serialize_precision =', line: 'serialize_precision = -1' }
+    - { regexp: '^#?precision =', line: 'precision = 16' }
+    - { regexp: '^#?display_startup_error =', line: 'display_startup_error = Off' }
+```
+
+You may also want to change some settings for fpm. See below for some settings you may want to change.
+
+```yaml
+- name: Change setting for fpm
+  lineinfile:
+    dest: /etc/php/{{ php_ver }}/fpm/pool.d/www.conf
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    backrefs: yes
+    state: present
+  with_items:
+    - { regexp: '^#?listen.backlog =', line: 'listen.backlog = 65536' }
+    - { regexp: '^#?pm.max_children =', line: 'pm.max_children = 16' }
+    - { regexp: '^#?pm.start_servers =', line: 'pm.start_servers = 4' }
+    - { regexp: '^#?pm.min_spare_servers =', line: 'pm.min_spare_servers = 4' }
+    - { regexp: '^#?pm.max_spare_servers =', line: 'pm.max_spare_servers = 8' }
+    - { regexp: '^#?pm.max_requests =', line: 'pm.max_requests = 0' }
+    - { regexp: '^#?pm.status_path =', line: 'pm.status_path = /fpm-status' }
+    - { regexp: '^#?ping.path =', line: 'ping.path = /fpm-ping' }
+    - { regexp: '^#?listen = ', line: 'listen = /run/php/php-fpm.sock' }
+```
+
+As we have updated setting for php we need to remember to restart php-fpm.
+
+```yaml
+- name: Reload nginx to activate letsencrypt site
+  ansible.builtin.service:
+    name: "php{{ php_ver }}-fpm"
+    state: restarted
+```
+
+### Step 4.5: Deploying your application - Final Step
+
+We are almost done with moving to ansible.
+
+We just need to generate our ssh and then git clone our app and run its deployment scripts.
+
+This time round we aren't going to generate the ssh key pare on the server as it will make our deployment complicated.
+
+Rather we are going to generate a key pair locally and then have ansible copy them to the server.
+
+This way if you need to deploy a second server everything just keeps on working.
+
+First let creat the role and the ```main.yml``` file for the deployment. I've put it here 
+[./roles/deployment/tasks/main.yml](./roles/deployment/tasks/main.yml).
+
+Next we want to create the ```files``` directory for this role to store the keys.
+
+Next we want to generate our keys.
+
+```shell
+ssh-keygen -t ed25519 -a 100 -f ./roles/deployment/files/deploy_id_ed25519 -q -N ""
+```
+
 

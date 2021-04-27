@@ -19,32 +19,44 @@
     update_cache: yes
     cache_valid_time: 600
     name:
-      - php7.4
-      - php7.4-cli
-      - php7.4-fpm
-      - php7.4-bcmath
-      - php7.4-common
-      - php7.4-curl
-      - php7.4-dev
-      - php7.4-gd
-      - php7.4-gmp
-      - php7.4-grpc
-      - php7.4-igbinary
-      - php7.4-imagick
-      - php7.4-intl
-      - php7.4-mcrypt
-      - php7.4-mbstring
-      - php7.4-mysql
-      - php7.4-opcache
-      - php7.4-pcov
-      - php7.4-pgsql
-      - php7.4-protobuf
-      - php7.4-redis
-      - php7.4-soap
-      - php7.4-sqlite3
-      - php7.4-ssh2
-      - php7.4-xml
-      - php7.4-zip
+      - php{{ php_ver }}
+      - php{{ php_ver }}-cli
+      - php{{ php_ver }}-fpm
+      - php{{ php_ver }}-bcmath
+      - php{{ php_ver }}-common
+      - php{{ php_ver }}-curl
+      - php{{ php_ver }}-dev
+      - php{{ php_ver }}-gd
+      - php{{ php_ver }}-gmp
+      - php{{ php_ver }}-grpc
+      - php{{ php_ver }}-igbinary
+      - php{{ php_ver }}-imagick
+      - php{{ php_ver }}-intl
+      - php{{ php_ver }}-mcrypt
+      - php{{ php_ver }}-mbstring
+      - php{{ php_ver }}-mysql
+      - php{{ php_ver }}-opcache
+      - php{{ php_ver }}-pcov
+      - php{{ php_ver }}-pgsql
+      - php{{ php_ver }}-protobuf
+      - php{{ php_ver }}-redis
+      - php{{ php_ver }}-soap
+      - php{{ php_ver }}-sqlite3
+      - php{{ php_ver }}-ssh2
+      - php{{ php_ver }}-xml
+      - php{{ php_ver }}-zip
+
+- name: Download composer installer
+  get_url:
+    dest: /usr/src/composer-setup.php
+    url: https://getcomposer.org/installer
+
+- name: Download and install Composer
+  shell: php /usr/src/composer-setup.php --install-dir=/bin --filename=composer
+  args:
+    chdir: /usr/src/
+    creates: /bin/composer
+    warn: false
 
 - name: Install CertBot
   ansible.builtin.apt:
