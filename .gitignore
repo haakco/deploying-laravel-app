@@ -292,6 +292,6 @@ crash.log
 # For built boxes
 *.box
 
-*ed25519.*
+*ed25519*
 
 
