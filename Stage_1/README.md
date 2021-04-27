@@ -672,7 +672,7 @@ First let creat the role and the ```main.yml``` file for the deployment. I've pu
 
 Next we want to create the ```files``` directory for this role to store the keys.
 
-Next we want to generate our keys.
+Next we want to generate our keys. (These are explicitly not added to git just to make sure no one uses them)
 
 ```shell
 ssh-keygen -t ed25519 -a 100 -f ./roles/deployment/files/deploy_id_ed25519 -q -N ""
