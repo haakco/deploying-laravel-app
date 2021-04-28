@@ -1,0 +1,6 @@
+---
+- hosts: web
+  roles:
+    - deployment
+  become: true
+  gather_facts: true

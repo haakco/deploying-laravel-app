@@ -1,0 +1,107 @@
+---
+- name: Set date.timezone for CLI
+  ansible.builtin.lineinfile:
+    dest: /etc/php/{{ php_ver }}/cli/php.ini
+    regexp: "^;?date.timezone ="
+    line: "date.timezone = UTC"
+    state: present
+
+- name: Set date.timezone for FPM
+  ansible.builtin.lineinfile:
+    dest: /etc/php/{{ php_ver }}/fpm/php.ini
+    regexp: "^;?date.timezone ="
+    line: "date.timezone = UTC"
+    state: present
+
+- name: Change mulitple setting for php.ini for cli
+  ansible.builtin.lineinfile:
+    dest: /etc/php/{{ php_ver }}/cli/php.ini
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    state: present
+  with_items:
+    - { regexp: '^;?upload_max_filesize =', line: 'upload_max_filesize = 128M' }
+    - { regexp: '^;?post_max_size =', line: 'post_max_size = 128M' }
+    - { regexp: '^;?default_charset =', line: 'default_charset = "UTF-8"' }
+    - { regexp: '^;?memory_limit =', line: 'memory_limit = 1G' }
+    - { regexp: '^;?max_execution_time =', line: 'max_execution_time = 600' }
+    - { regexp: '^;?max_input_time =', line: 'max_input_time = 600' }
+    - { regexp: '^;?default_socket_timeout =', line: 'default_socket_timeout = 600' }
+    - { regexp: '^;?realpath_cache_size =', line: 'realpath_cache_size = 16384K' }
+    - { regexp: '^;?realpath_cache_ttl =', line: 'realpath_cache_ttl = 7200' }
+    - { regexp: '^;?intl.default_locale =', line: 'intl.default_locale = en' }
+    - { regexp: '^;?expose_php =', line: 'expose_php = Off' }
+    - { regexp: '^;?opcache.enable =', line: 'opcache.enable = 1' }
+    - { regexp: '^;?opcache.enable_cli =', line: 'opcache.enable_cli = 1' }
+    - { regexp: '^;?opcache.memory_consumption =', line: 'opcache.memory_consumption = 128' }
+    - { regexp: '^;?opcache.interned_strings_buffer =', line: 'opcache.interned_strings_buffer = 16' }
+    - { regexp: '^;?opcache.max_accelerated_files =', line: 'opcache.max_accelerated_files = 16229' }
+    - { regexp: '^;?opcache.revalidate_path =', line: 'opcache.revalidate_path = 1' }
+    - { regexp: '^;?opcache.fast_shutdown =', line: 'opcache.fast_shutdown = 0' }
+    - { regexp: '^;?opcache.enable_file_override =', line: 'opcache.enable_file_override = 0' }
+    - { regexp: '^;?opcache.validate_timestamps =', line: 'opcache.validate_timestamps = 1' }
+    - { regexp: '^;?opcache.revalidate_freq =', line: 'opcache.revalidate_freq = 30' }
+    - { regexp: '^;?opcache.save_comments =', line: 'opcache.save_comments = 1' }
+    - { regexp: '^;?opcache.load_comments =', line: 'opcache.load_comments = 1' }
+    - { regexp: '^;?opcache.dups_fix =', line: 'opcache.dups_fix = 1' }
+    - { regexp: '^;?serialize_precision =', line: 'serialize_precision = -1' }
+    - { regexp: '^;?precision =', line: 'precision = 16' }
+    - { regexp: '^;?display_startup_error =', line: 'display_startup_error = Off' }
+
+- name: Change mulitple setting for php.ini for fpm
+  ansible.builtin.lineinfile:
+    dest: /etc/php/{{ php_ver }}/fpm/php.ini
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    state: present
+  with_items:
+    - { regexp: '^;?upload_max_filesize =', line: 'upload_max_filesize = 128M' }
+    - { regexp: '^;?post_max_size =', line: 'post_max_size = 128M' }
+    - { regexp: '^;?default_charset =', line: 'default_charset = "UTF-8"' }
+    - { regexp: '^;?memory_limit =', line: 'memory_limit = 1G' }
+    - { regexp: '^;?max_execution_time =', line: 'max_execution_time = 600' }
+    - { regexp: '^;?max_input_time =', line: 'max_input_time = 600' }
+    - { regexp: '^;?default_socket_timeout =', line: 'default_socket_timeout = 600' }
+    - { regexp: '^;?realpath_cache_size =', line: 'realpath_cache_size = 16384K' }
+    - { regexp: '^;?realpath_cache_ttl =', line: 'realpath_cache_ttl = 7200' }
+    - { regexp: '^;?intl.default_locale =', line: 'intl.default_locale = en' }
+    - { regexp: '^;?expose_php =', line: 'expose_php = Off' }
+    - { regexp: '^;?opcache.enable =', line: 'opcache.enable = 1' }
+    - { regexp: '^;?opcache.enable_cli =', line: 'opcache.enable_cli = 1' }
+    - { regexp: '^;?opcache.memory_consumption =', line: 'opcache.memory_consumption = 128' }
+    - { regexp: '^;?opcache.interned_strings_buffer =', line: 'opcache.interned_strings_buffer = 16' }
+    - { regexp: '^;?opcache.max_accelerated_files =', line: 'opcache.max_accelerated_files = 16229' }
+    - { regexp: '^;?opcache.revalidate_path =', line: 'opcache.revalidate_path = 1' }
+    - { regexp: '^;?opcache.fast_shutdown =', line: 'opcache.fast_shutdown = 0' }
+    - { regexp: '^;?opcache.enable_file_override =', line: 'opcache.enable_file_override = 0' }
+    - { regexp: '^;?opcache.validate_timestamps =', line: 'opcache.validate_timestamps = 1' }
+    - { regexp: '^;?opcache.revalidate_freq =', line: 'opcache.revalidate_freq = 30' }
+    - { regexp: '^;?opcache.save_comments =', line: 'opcache.save_comments = 1' }
+    - { regexp: '^;?opcache.load_comments =', line: 'opcache.load_comments = 1' }
+    - { regexp: '^;?opcache.dups_fix =', line: 'opcache.dups_fix = 1' }
+    - { regexp: '^;?serialize_precision =', line: 'serialize_precision = -1' }
+    - { regexp: '^;?precision =', line: 'precision = 16' }
+    - { regexp: '^;?display_startup_error =', line: 'display_startup_error = Off' }
+
+- name: Change setting for fpm
+  ansible.builtin.lineinfile:
+    dest: /etc/php/{{ php_ver }}/fpm/pool.d/www.conf
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    state: present
+  with_items:
+    - { regexp: '^;?listen.backlog =', line: 'listen.backlog = 65536' }
+    - { regexp: '^;?pm.max_children =', line: 'pm.max_children = 16' }
+    - { regexp: '^;?pm.start_servers =', line: 'pm.start_servers = 4' }
+    - { regexp: '^;?pm.min_spare_servers =', line: 'pm.min_spare_servers = 4' }
+    - { regexp: '^;?pm.max_spare_servers =', line: 'pm.max_spare_servers = 8' }
+    - { regexp: '^;?pm.max_requests =', line: 'pm.max_requests = 0' }
+    - { regexp: '^;?pm.status_path =', line: 'pm.status_path = /fpm-status' }
+    - { regexp: '^;?ping.path =', line: 'ping.path = /fpm-ping' }
+    - { regexp: '^;?listen = ', line: 'listen = /run/php/php-fpm.sock' }
+
+- name: Reload nginx to activate letsencrypt site
+  ansible.builtin.service:
+    name: "php{{ php_ver }}-fpm"
+    state: restarted
+

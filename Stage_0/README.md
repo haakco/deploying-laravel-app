@@ -26,7 +26,7 @@ This stage will cover simply setting up a simple server and deploying your code.
 1. Needed to log into your server securely.
 1. You have a Domain Name, and you can add entries to point to the server.
 1. We'll be using example.com here. Just replace that with your domain of choice.
-1. For DNS, I'll be using Cloudflare in these examples.
+1. For DNS, I'll be using [Cloudflare](https://www.cloudflare.com/) in these examples.
 1. I would recommend using a DNS provider that supports [Terraform](https://www.terraform.io/) and
    [LetsEncrypt](https://community.letsencrypt.org/t/dns-providers-who-easily-integrate-with-lets-encrypt-dns-validation/86438)
 
@@ -100,13 +100,13 @@ If you don't have the IPv6 IP, you can click the 'Enable now button'.
 
 Grab these two IP's and head over to your DNS provider.
 
-I'll be going over how to do this with Cloudflare, but the steps should be the same for most other
+I'll be going over how to do this with [Cloudflare](https://www.cloudflare.com/), but the steps should be the same for most other
 providers.
 
 Now using the IP's create both A records, using the IPv4, and AAAA records, using the IPv6, for the following
 entries.
 
-If you are using Cloudflare, make sure the proxy is disabled for now.
+If you are using [Cloudflare](https://www.cloudflare.com/), make sure the proxy is disabled for now.
 
 Click on the orange cloud when adding the entry to make it grey.
 

@@ -2,21 +2,22 @@
 
 ## Intro
 
-This stage will cover simply setting up a simple server and deploying your code.
+This stage we'll take the manual server steps and automate them via ansible.
 
 ### Pros
 
-* Simple
-* Get to learn what for future stages
-* Up and running quickly
+* Still reasonably simple
+* Server setup fully documented
+* New server setup fast  
+* Simple to replicate servers
 
 ### Cons
 
-* Not repeatable
-* Hard not to have a difference between prod and dev
-* Missing recommended extra programs, e.g. Redis, Postfix, Centralised logging
-* Single point of failure (Only one server)
-* No documentation on how the server was setup
+* Not fully repeatable yet
+* Takes longer initially to set up.
+* Require knowledge for far more application and moving pieces.
+* Setting up a local dev still not covered and hard to keep in sync.
+* Still has single point of failure (Only one server)
 
 ## Assumptions
 
@@ -31,7 +32,7 @@ This stage will cover simply setting up a simple server and deploying your code.
 1. Needed to log into your server securely.
 1. You have a Domain Name, and you can add entries to point to the server.
 1. We'll be using example.com here. Just replace that with your domain of choice.
-1. For DNS, I'll be using Cloudflare in these examples.
+1. For DNS, I'll be using [Cloudflare](https://www.cloudflare.com/) in these examples.
 1. I would recommend using a DNS provider that supports [Terraform](https://www.terraform.io/) and
    [LetsEncrypt](https://community.letsencrypt.org/t/dns-providers-who-easily-integrate-with-lets-encrypt-dns-validation/86438)
 
@@ -669,7 +670,7 @@ Instead, we will generate a key pair locally and then have Ansible copy them to 
 This way, if you need to deploy a second server, everything keeps on working.
 
 First, let create the role and the ```main.yml``` file for the deployment. I've put it here.
-[./roles/deployment/tasks/main.yml](./roles/deployment/tasks/main.yml).
+[./roles/deployment/tasks/main.yml](./ansible/roles/deployment/tasks/main.yml).
 
 Next, we want to create the ```files``` directory for this role to store the keys.
 

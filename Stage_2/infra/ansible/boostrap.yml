@@ -1,0 +1,15 @@
+---
+- hosts: all
+  vars:
+    bootstrap: true
+    ansible_user: root
+    domain_name: custd.com
+    letsencrypt_email: custd@haak.co
+    php_ver: 7.4
+  roles:
+    - upgrade_server
+    - nginx_php
+    - php_tuning
+    - deployment
+  become: true
+  gather_facts: true

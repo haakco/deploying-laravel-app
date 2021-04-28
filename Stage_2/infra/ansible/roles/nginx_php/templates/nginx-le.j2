@@ -1,0 +1,45 @@
+add_header X-Frame-Options SAMEORIGIN;
+add_header X-Content-Type-Options nosniff;
+add_header X-XSS-Protection "1; mode=block";
+add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.google-analytics.com; img-src 'self' data: https://www.google-analytics.com; style-src 'self' 'unsafe-inline'; font-src 'self'; frame-src 'none'; object-src 'none'";
+
+# HTTPS server
+#
+server {
+  listen [::]:443 ssl ipv6only=on;
+  listen 443 ssl default deferred;
+  server_name _;
+
+  # Remove www from domain
+  if ($host ~* ^www\.(.*)) {
+      set $host_without_www $1;
+      rewrite ^(.*) http://$host_without_www$1 permanent;
+  }
+
+  ssl_certificate         /etc/letsencrypt/live/{{ domain_name }}/fullchain.pem;
+  ssl_certificate_key     /etc/letsencrypt/live/{{ domain_name }}/privkey.pem;
+  ssl_trusted_certificate /etc/letsencrypt/live/{{ domain_name }}/fullchain.pem;
+
+  ssl_session_cache shared:SSL:10m;
+  ssl_session_timeout 30m;
+  ssl_stapling on;
+  ssl_stapling_verify on;
+
+  ssl_dhparam /etc/nginx/dhparams.pem;
+
+  root /var/www/site/public;
+  index index.html index.htm index.php;
+
+  location / {
+    try_files $uri $uri/ /index.php?q=$uri&$args;
+  }
+
+  location ~ \.php$ {
+    include snippets/fastcgi-php.conf;
+    fastcgi_pass unix:/run/php/php-fpm.sock;
+  }
+
+  location ~ /\.ht {
+    deny all;
+  }
+}
