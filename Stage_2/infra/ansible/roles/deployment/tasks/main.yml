@@ -78,4 +78,12 @@
   when: not (bootstrap | default(false))
   run_once: true
 
+- name: Run any db seed
+  become: yes
+  become_user: www-data
+  ansible.builtin.shell:
+    chdir: /var/www/site
+    cmd: yes | php artisan db:seed
+  run_once: true
+
 

@@ -76,4 +76,11 @@
     chdir: /var/www/site
     cmd: yes | php artisan migrate
 
+- name: Run any db seed
+  become: yes
+  become_user: www-data
+  ansible.builtin.shell:
+    chdir: /var/www/site
+    cmd: yes | php artisan db:seed
+
 
