@@ -3,22 +3,33 @@ APP_ENV=production
 APP_KEY=base64:8dQ7xw/kM9EYMV4cUkzKgET8jF4P0M0TOmmqN05RN2w=
 APP_DEBUG=false
 
-DB_CONNECTION=pgsql
-DB_HOST=127.0.0.1
-DB_PORT=5432
-DB_DATABASE=db_example
-DB_USERNAME=user_example
-DB_PASSWORD=password_example
-
 BROADCAST_DRIVER=log
 CACHE_DRIVER=file
 SESSION_DRIVER=file
 SESSION_LIFETIME=9999
 QUEUE_DRIVER=sync
 
-REDIS_HOST=127.0.0.1
-REDIS_PASSWORD=null
-REDIS_PORT=6379
+#REDIS_HOST=127.0.0.1
+#REDIS_PASSWORD=null
+#REDIS_PORT=6379
+
+#DB_CONNECTION=pgsql
+#DB_HOST=db-int.custd.com
+#DB_PORT=5432
+#DB_DATABASE=db_example
+#DB_USERNAME=user_example
+#DB_PASSWORD=password_example
+
+DB_CONNECTION=pgsql
+DB_HOST=private-pg-example-do-user-109433-0.b.db.ondigitalocean.com
+DB_PORT=25060
+DB_DATABASE=defaultdb
+DB_USERNAME=doadmin
+DB_PASSWORD=fz3i72iqv5yp9ojp
+
+REDIS_HOST=private-redis-example-do-user-109433-0.b.db.ondigitalocean.com
+REDIS_PASSWORD=25061
+REDIS_PORT=r4ttji7dgblxvkoj
 
 MAIL_DRIVER=smtp
 MAIL_HOST=smtp.mailtrap.io

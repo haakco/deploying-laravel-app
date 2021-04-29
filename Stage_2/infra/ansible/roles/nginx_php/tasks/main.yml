@@ -46,6 +46,19 @@
       - php{{ php_ver }}-xml
       - php{{ php_ver }}-zip
 
+- name: Add postgresql repository
+  ansible.builtin.apt_repository:
+    repo: "deb https://apt.postgresql.org/pub/repos/apt/ {{ ansible_distribution_release }}-pgdg main"
+    state: present
+    filename: pgdg.list
+
+- name: Install Postgres Client
+  ansible.builtin.apt:
+    update_cache: yes
+    cache_valid_time: 600
+    name:
+      - postgresql-client
+
 - name: Download composer installer
   get_url:
     dest: /usr/src/composer-setup.php

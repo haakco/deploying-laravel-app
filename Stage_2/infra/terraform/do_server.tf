@@ -1,7 +1,7 @@
 # Create a new SSH key
 resource "digitalocean_ssh_key" "tim-ssh" {
   name = "Tim SSH Key"
-  public_key = file("./ssh_key/timhaak@macbook.pub")
+  public_key = file("./ssh_key/id_ed25519_macbook.pub")
 }
 
 data "digitalocean_image" "snapshot" {

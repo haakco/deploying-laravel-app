@@ -69,4 +69,13 @@
     chdir: /var/www/site
     cmd: composer install
 
+- name: Run any database migrations
+  become: yes
+  become_user: www-data
+  ansible.builtin.shell:
+    chdir: /var/www/site
+    cmd: yes | php artisan migrate
+  when: not (bootstrap | default(false))
+  run_once: true
+
 
