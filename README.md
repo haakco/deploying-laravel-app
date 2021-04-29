@@ -40,3 +40,9 @@ We'll take you through the quickest and simplest method to get a  server set up,
 Ok we are now going to step up the complexity and automate the setup of the server with ansible.
 
 [Follow along here Stage 1](./Stage_1/README.md)
+
+### [Stage 2](./Stage_2/README.md)
+With this stage we are going to continue with our automation and automate the full infrastructure setup
+using terraform and packer to build our images.
+
+[Follow along here Stage 2](./Stage_2/README.md)
