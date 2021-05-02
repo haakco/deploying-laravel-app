@@ -284,8 +284,8 @@ provisioner "ansible" {
 }
 ```
 
-If you are making changes to the ansbile scripts I would recommend first just manually spinning up a
-server and then running the playbook by hand to test if it's working.
+If you are making changes to the Ansible scripts I would recommend first just manually spinning up a
+server and then running the playbook by hand till everything is working correctly.
 
 If you do it via packer it has to spin up a clean server everytime, and it takes a really long time to
 debug.
@@ -294,11 +294,338 @@ So let go over how to run packer to create our image.
 
 First make sure you've set your environmental variables for DigitalOcean and Cloudflare.
 
-We then just basically run packer passing it the hcl file.
+We then just basically run packer passing it the config file.
 
 ```shell
 setLvDepProfile
 packer build packer-ubuntu2004-do.pkr.hcl
 ```
+
+Once this has completed running it should print out the name of the new image file.
+
+Looking at the packer config you will see this line.
+
+```hcl
+snapshot_name = "lv-example-${var.image_name}-${var.region_name}-${local.timestamp}"
+```
+
+So the image file name should look something like ```lv-example-ubuntu-20-04-x64-fra1-20210428185323```.
+
+If you got to the ```Image``` section of digital ocean you should also see the image sitting there.
+
+![DO Images](./images/do_images.png)
+
+If you do end up building these images often plase remember to come and clean this up. As you are charged
+a small amount for the storage.
+
+## Steps 2: Terraform
+
+Terraform itself is reasonably simple to use. 
+
+You describe and name the item you want it to create.
+
+You can then use this name to refer to generated values to help you set up future items.
+
+As an example you describe the server you would like to create. You can then use the named server object 
+to create dns names for its IP's.
+
+Also you can split your Terraform config into different logical blocks by just creating a new file,
+and moving the config section over.
+
+Terraform will read in all files in the same directory ending with ```*.tf``` and then work out
+which order to run them setup in.
+
+Let's go over the setting up a simple system similar to what we have been doing.
+
+I'll be spinning up the database and redis using DigitalOceans database as a service more to show you how
+to create different pieces. You may want to run your own.
+
+### Variables
+For commonly changed setting we'll be creating variables. This make it easier to change these in a single 
+place rather than hunt through all the files to work out where to change them.
+
+Some variables have default values, and some don't.
+
+The general rule I follow is never have default values for things you never want to be public.
+
+For anything else always put a default value in.
+
+If you then set an environmental variable following the pattern ```TF_VAR_variable_name```.
+
+This will also overwrite default values.
+
+If you look at the bash scripts above they do this for both the DigitalOcean and CloudFlare api tokens.
+
+### DigitalOcean auth
+
+To start we need add the settings that allows Terraform to authenticate against digital ocean.
+
+First we create the variable for the token.
+
+```hcl
+variable "do_token" {}
+```
+
+Then we tell Terraform to authenticate against digital ocean using that variable.
+
+```hcl
+provider "digitalocean" {
+  token = var.do_token
+}
+```
+
+### DigitalOcean server
+In this example we are going to assume you don't have a SSH key setup in DigitalOcean.
+
+So first we want to add and register your public key. 
+
+```hcl
+resource "digitalocean_ssh_key" "tim-ssh" {
+  name = "Tim SSH Key"
+  public_key = file("./ssh_key/id_ed25519_macbook.pub")
+}
+```
+
+Next we want to get the ID for the image we created previously.
+
+We do this by doing a data lookup against DigitalOcean. Giving it the name of the image as they unique
+key to do the look up with.
+
+```hcl
+data "digitalocean_image" "snapshot" {
+  name = var.base_web_snapshot_name
+}
+```
+
+Next we want to set up some variables.
+
+The size of server we would like to spin up. (https://developers.digitalocean.com/documentation/v2/#sizes)
+
+```hcl
+variable server_size {
+  default = "s-1vcpu-1gb"
+}
+```
+
+The region we would like to spin it up in. (https://developers.digitalocean.com/documentation/v2/#regions)
+
+```hcl
+variable region {
+  default = "fra1"
+}
+```
+
+We also set up a variable for the quantity of servers we would like to spin up.
+
+```hcl
+variable "server_count" {
+  description = "Amount of servers"
+  default = 2
+}
+```
+
+With those set we can then do the config to spin up the server. 
+
+You'll see that we specify a format to use the count number to make sure the names are unique.
+
+```hcl
+resource "digitalocean_droplet" "web" {
+  name = "srv${format("%02d", count.index)}.${var.dns_domain}"
+  size = var.server_size
+  image = data.digitalocean_image.snapshot.id
+  region = var.region
+  ipv6 = true
+  ssh_keys = [
+    digitalocean_ssh_key.tim-ssh.id
+  ]
+  count = var.server_count
+}
+```
+
+That's all you need to spin up a server.
+
+###Database
+
+I'm not going to go to much into the database config as it's very simpler to the server above.
+
+```hcl
+resource "digitalocean_database_cluster" "postgres-cluster" {
+  name = var.db_pg_cluster_name
+  engine = "pg"
+  version = "13"
+  size = var.db_size
+  region = var.region
+  node_count = var.db_pg_node_count
+}
+
+resource "digitalocean_database_db" "database-example" {
+  cluster_id = digitalocean_database_cluster.postgres-cluster.id
+  name = var.db_pg_name
+}
+```
+
+Though we do add a firewall for the database allowing only the two servers we created to talk to it.
+
+As we have multiple servers this is a bit more complicated and we need to use the ```for_each``` that 
+Terraform provides.
+
+Normally the rule would follow this format.
+
+```hcl
+rule {
+  type  = "ip_addr"
+  value = "192.168.1.1"
+}
+```
+
+So to loop through the servers and create that we need to do the following.
+
+```hcl
+dynamic "rule" {
+  for_each = digitalocean_droplet.web
+  content {
+    type = "droplet"
+    value = rule.value["id"]
+  }
+}
+```
+
+So the full rule config becomes.
+
+```hcl
+resource "digitalocean_database_firewall" "block-external-fw" {
+  cluster_id = digitalocean_database_cluster.postgres-cluster.id
+
+  dynamic "rule" {
+    for_each = digitalocean_droplet.web
+    content {
+      type = "droplet"
+      value = rule.value["id"]
+    }
+  }
+}
+```
+
+### Redis
+
+The redis config is almost identical to the database one and is bellow.
+
+```hcl
+resource "digitalocean_database_cluster" "redis-cluster" {
+  name       = var.db_redis_cluster_name
+  engine     = "redis"
+  version    = "6"
+  size       = var.db_size
+  region     = var.region
+  node_count = var.db_redis_node_count
+}
+
+resource "digitalocean_database_firewall" "block-external-fw-redis-pg" {
+  cluster_id = digitalocean_database_cluster.redis-cluster.id
+
+  dynamic "rule" {
+    for_each = digitalocean_droplet.web
+    content {
+      type = "droplet"
+      value = rule.value["id"]
+    }
+  }
+}
+```
+
+### DNS
+
+Ok we are almost done with the Terraform config. We just now need to add the DNS entries so that we
+know how to talk to servers.
+
+As with DigitalOcean we need to first authenticate against Cloud flare.
+
+```hcl
+provider "cloudflare" {
+  api_token = var.cf_api_key
+}
+```
+
+In this example we're going to assume that you have already set up your DNS on CloudFlare.
+
+So we first need to do the data lookup to get its information.
+
+```hcl
+data "cloudflare_zones" "dns-domain" {
+  filter {
+    name = var.dns_domain
+  }
+}
+```
+
+Next I like just creating a test entry to make sure that everything is working. This more needed
+while setting all the pieces up.
+
+```hcl
+resource "cloudflare_record" "A-test-dns-domain" {
+  zone_id = lookup(data.cloudflare_zones.dns-domain.zones[0], "id")
+  name = "test"
+  type = "A"
+  ttl = var.dns_ttl
+  proxied = "false"
+  value = "127.0.0.1"
+}
+```
+
+Now I want to add entries for each individual server, so we can get to each separately.
+
+This will be needed to do updates for you code for now. (We'll automate this in the future).
+
+Here we use the count again but use the amount of servers that are spun up to get that count.
+
+We then also use the index to get the specific information for each server.
+
+We use the count to generate a unique name.
+
+```hcl
+resource "cloudflare_record" "A-srv00" {
+  zone_id = lookup(data.cloudflare_zones.dns-domain.zones[0], "id")
+  name = "srv${format("%02d", count.index)}.${var.dns_domain}"
+  type = "A"
+  ttl = var.dns_ttl
+  value  = element(digitalocean_droplet.web.*.ipv4_address, count.index)
+  count  = length(digitalocean_droplet.web.*.ipv4_address)
+}
+```
+
+Finally, we add both servers to the dns entries for the naked domain and ```www``` e.g.
+
+* example.com
+* www.example.com
+
+We also set these to proxied. That way if one goes down CloudFlare should detect it and send all the
+traffic to the one that is still up.
+
+Basically giving us high availability for the servers and some load balancing when they are both up.
+
+
+```hcl
+resource "cloudflare_record" "A" {
+  zone_id = lookup(data.cloudflare_zones.dns-domain.zones[0], "id")
+  name = "@"
+  type = "A"
+//  ttl = var.dns_ttl
+  proxied = true
+  count  = length(digitalocean_droplet.web.*.ipv4_address)
+  value  = element(digitalocean_droplet.web.*.ipv4_address, count.index)
+}
+
+resource "cloudflare_record" "A-www" {
+  zone_id = lookup(data.cloudflare_zones.dns-domain.zones[0], "id")
+  name = "www"
+  type = "A"
+//  ttl = var.dns_ttl
+  proxied = true
+  count  = length(digitalocean_droplet.web.*.ipv4_address)
+  value  = element(digitalocean_droplet.web.*.ipv4_address, count.index)
+}
+```
+
+That's pretty much it for the Terraform side.
 
 

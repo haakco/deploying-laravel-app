@@ -31,24 +31,6 @@ resource "cloudflare_record" "AAAA-srv00" {
   count  = length(digitalocean_droplet.web.*.ipv6_address)
 }
 
-resource "cloudflare_record" "A-web" {
-  zone_id = lookup(data.cloudflare_zones.dns-domain.zones[0], "id")
-  name = "web"
-  type = "A"
-  ttl = var.dns_ttl
-  count  = length(digitalocean_droplet.web.*.ipv4_address)
-  value  = element(digitalocean_droplet.web.*.ipv4_address, count.index)
-}
-
-resource "cloudflare_record" "AAAA-web" {
-  zone_id = lookup(data.cloudflare_zones.dns-domain.zones[0], "id")
-  name = "web"
-  type = "AAAA"
-  ttl = var.dns_ttl
-  count  = length(digitalocean_droplet.web.*.ipv6_address)
-  value  = element(digitalocean_droplet.web.*.ipv6_address, count.index)
-}
-
 resource "cloudflare_record" "A" {
   zone_id = lookup(data.cloudflare_zones.dns-domain.zones[0], "id")
   name = "@"
@@ -76,13 +58,4 @@ resource "cloudflare_record" "CNAME-db-int" {
   ttl = var.dns_ttl
   proxied = false
   value  = digitalocean_database_cluster.postgres-cluster.private_host
-}
-
-resource "cloudflare_record" "CNAME-db-ext" {
-  zone_id = lookup(data.cloudflare_zones.dns-domain.zones[0], "id")
-  name = "db-ext"
-  type = "CNAME"
-  ttl = var.dns_ttl
-  proxied = false
-  value  = digitalocean_database_cluster.postgres-cluster.host
 }
