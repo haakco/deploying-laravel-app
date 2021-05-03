@@ -1,0 +1,15 @@
+# Git files
+.git
+.gitignore
+
+# Local config files
+.editorconfig
+
+#build files
+build_2004_74.sh
+run.sh
+buildCache.sh
+
+# Information files
+LICENSE
+README.md

@@ -1,0 +1,161 @@
+ARG BASE_UBUNTU_VERSION='ubuntu:20.04'
+
+FROM ${BASE_UBUNTU_VERSION}
+
+ARG BASE_UBUNTU_VERSION='ubuntu:20.04'
+ARG PHP_VERSION='7.4'
+
+ENV DEBIAN_FRONTEND="noninteractive" \
+    LANG="en_US.UTF-8" \
+    LANGUAGE="en_US.UTF-8" \
+    LC_ALL="C.UTF-8" \
+    TERM="xterm" \
+    PHP_VERSION="$PHP_VERSION"
+
+ENV PHP_TIMEZONE="UTC" \
+    PHP_UPLOAD_MAX_FILESIZE="128M" \
+    PHP_POST_MAX_SIZE="128M" \
+    PHP_MEMORY_LIMIT="1G" \
+    PHP_MAX_EXECUTION_TIME="60" \
+    PHP_MAX_INPUT_TIME="60" \
+    PHP_DEFAULT_SOCKET_TIMEOUT="60" \
+    PHP_OPCACHE_MEMORY_CONSUMPTION="128" \
+    PHP_OPCACHE_INTERNED_STRINGS_BUFFER="16" \
+    PHP_OPCACHE_MAX_ACCELERATED_FILES="16229" \
+    PHP_OPCACHE_REVALIDATE_PATH="1" \
+    PHP_OPCACHE_ENABLE_FILE_OVERRIDE="0" \
+    PHP_OPCACHE_VALIDATE_TIMESTAMPS="0" \
+    PHP_OPCACHE_REVALIDATE_FREQ="1" \
+    PHP_OPCACHE_PRELOAD_FILE="" \
+    COMPOSER_PROCESS_TIMEOUT=2000
+
+RUN echo "PHP_VERSION=${PHP_VERSION}" && \
+    echo "UBUNTU_VERSION=${BASE_UBUNTU_VERSION}" && \
+    echo ""
+
+## Setting to improve build speed
+RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections && \
+    echo apt-fast apt-fast/maxdownloads string 10 | debconf-set-selections && \
+    echo apt-fast apt-fast/dlflag boolean true | debconf-set-selections && \
+    echo apt-fast apt-fast/aptmanager string apt-get | debconf-set-selections && \
+    echo "force-unsafe-io" > /etc/dpkg/dpkg.cfg.d/02apt-speedup && \
+    echo "Acquire::http {No-Cache=True;};" > /etc/apt/apt.conf.d/no-cache
+
+## Make sure everything is fully upgraded and shared tooling
+RUN apt update && \
+    apt -y  \
+        dist-upgrade \
+        && \
+    apt-get install -qy \
+        bash-completion \
+        ca-certificates \
+        inetutils-ping inetutils-tools \
+        mysql-client \
+        postgresql-client \
+        rsyslog \
+        software-properties-common sudo supervisor \
+        vim \
+        && \
+    update-ca-certificates --fresh && \
+    apt-get -y autoremove && \
+    apt-get -y clean && \
+    rm -rf /var/lib/apt/lists/* && \
+    rm -rf /var/tmp/* && \
+    rm -rf /tmp/*
+
+## Install PHP
+RUN add-apt-repository -y ppa:ondrej/php && \
+    apt update && \
+    apt install -y php${PHP_VERSION} php${PHP_VERSION}-cli php${PHP_VERSION}-fpm \
+      php${PHP_VERSION}-bcmath \
+      php${PHP_VERSION}-common php${PHP_VERSION}-curl \
+      php${PHP_VERSION}-dev \
+      php${PHP_VERSION}-gd php${PHP_VERSION}-gmp php${PHP_VERSION}-grpc \
+      php${PHP_VERSION}-igbinary php${PHP_VERSION}-imagick php${PHP_VERSION}-intl \
+      php${PHP_VERSION}-mcrypt php${PHP_VERSION}-mbstring php${PHP_VERSION}-mysql \
+      php${PHP_VERSION}-opcache \
+      php${PHP_VERSION}-pcov php${PHP_VERSION}-pgsql php${PHP_VERSION}-protobuf \
+      php${PHP_VERSION}-redis \
+      php${PHP_VERSION}-soap php${PHP_VERSION}-sqlite3 php${PHP_VERSION}-ssh2  \
+      php${PHP_VERSION}-xml \
+      php${PHP_VERSION}-zip \
+      && \
+    apt -y  \
+        dist-upgrade \
+        && \
+    apt-get -y autoremove && \
+    apt-get -y clean && \
+    rm -rf /var/lib/apt/lists/* && \
+    rm -rf /var/tmp/* && \
+    rm -rf /tmp/*
+
+RUN add-apt-repository -y ppa:nginx/stable && \
+    apt update && \
+    apt install -y \
+        nginx \
+      && \
+    apt -y  \
+        dist-upgrade \
+        && \
+    apt-get -y autoremove && \
+    apt-get -y clean && \
+    rm -rf /var/lib/apt/lists/* && \
+    rm -rf /var/tmp/* && \
+    rm -rf /tmp/*
+
+ADD ./files/nginx_config /etc/nginx/config
+
+RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" && \
+    php composer-setup.php --install-dir=/bin --filename=composer && \
+    php -r "unlink('composer-setup.php');"
+
+# Add openssh
+RUN apt-get update && \
+    apt-get -qy dist-upgrade && \
+    apt-get install -qy \
+      openssh-server \
+      && \
+    ssh-keygen -A && \
+    mkdir -p /run/sshd && \
+    apt-get -y autoremove && \
+    apt-get -y clean && \
+    rm -rf /var/lib/apt/lists/* && \
+    rm -rf /var/tmp/* && \
+    rm -rf /tmp/*
+
+WORKDIR /var/www/site
+
+## Allow log in as user
+RUN sed -i.bak -E \
+      -s 's#/var/www:/usr/sbin/nologin#/var/www:/bin/bash#' \
+      /etc/passwd
+
+ADD ./files/bash/artisan-bash-prompt /etc/bash_completion.d/artisan-bash-prompt
+ADD ./files/bash/composer-bash-prompt /etc/bash_completion.d/composer-bash-prompt
+
+# Set up bash variables
+RUN echo 'PATH="/usr/bin:/var/www/site/pharbin:/var/www/site/vendor/bin:/var/www/site/vendor/bin:/site/.composer/vendor/bin:${PATH}"' >> /var/www/.bashrc && \
+    echo 'shopt -s histappend' >> /var/www/.bashrc && \
+    echo 'PROMPT_COMMAND="history -a;$PROMPT_COMMAND"' >> /var/www/.bashrc && \
+    echo 'cd /var/www/site' >> /var/www/.bashrc && \
+    mkdir -p /var/www/site/pharbin && \
+    touch /root/.bash_profile /var/www/.bash_profile && \
+    chown root: /etc/bash_completion.d/artisan-bash-prompt /etc/bash_completion.d/composer-bash-prompt && \
+    chmod u+rw /etc/bash_completion.d/artisan-bash-prompt /etc/bash_completion.d/composer-bash-prompt && \
+    chmod go+r /etc/bash_completion.d/artisan-bash-prompt /etc/bash_completion.d/composer-bash-prompt && \
+    mkdir -p /var/www/site/tmp
+
+# Make sure directories have correct ownership
+RUN find /var/www -not -user www-data -execdir chown "www-data" {} \+
+
+# make sure stdout and stderro work correctly
+RUN chmod -R a+w /dev/stdout && \
+    chmod -R a+w /dev/stderr && \
+    chmod -R a+w /dev/stdin && \
+    usermod -a -G tty syslog && \
+    usermod -a -G tty  www-data
+
+ADD ./files/run_with_env.sh /bin/run_with_env.sh
+ADD ./files/start.sh /start.sh
+ADD ./files/supervisord_base.conf /supervisord_base.conf
+

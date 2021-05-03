@@ -10,7 +10,7 @@ We'll also start making the system more robust to hand a single server falling o
 
 * Very repeatable
 * Faster from nothing to fully setup
-* Can simply replicate the entire infrastructure for dev or testing.
+* Can simply replicate the entire infrastructure for stating.
 * Everything documented.
 
 ### Cons
@@ -18,6 +18,7 @@ We'll also start making the system more robust to hand a single server falling o
 * Takes longer initially to set up.
 * Require knowledge for far more application and moving pieces.
 * Setting up a local dev still not covered and hard to keep in sync.
+* Hard to replicate for development.
 
 ## Assumptions
 
