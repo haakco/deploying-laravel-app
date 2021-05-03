@@ -1,6 +1,6 @@
 variable "dns_domain" {
   description = "Main domain"
-  default = "example.com"
+  default = "custd.com"
 }
 
 variable "dns_mx_ttl" {

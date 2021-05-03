@@ -1,7 +1,7 @@
 # Create a new SSH key
-resource "digitalocean_ssh_key" "tim-ssh" {
-  name = "Tim SSH Key"
-  public_key = file("./ssh_key/id_ed25519_macbook.pub")
+resource "digitalocean_ssh_key" "ssh-key" {
+  name = "SSH Key"
+  public_key = file("../ansible/roles/deployment/files/deploy_id_ed25519.pub")
 }
 
 data "digitalocean_image" "snapshot" {
@@ -15,7 +15,7 @@ resource "digitalocean_droplet" "web" {
   region = var.region
   ipv6 = true
   ssh_keys = [
-    digitalocean_ssh_key.tim-ssh.id
+    digitalocean_ssh_key.ssh-key.id
   ]
   count = var.server_count
 }

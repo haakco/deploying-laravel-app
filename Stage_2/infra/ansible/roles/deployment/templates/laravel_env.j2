@@ -5,13 +5,9 @@ APP_DEBUG=false
 
 BROADCAST_DRIVER=log
 CACHE_DRIVER=file
-SESSION_DRIVER=file
+SESSION_DRIVER=redis
 SESSION_LIFETIME=9999
 QUEUE_DRIVER=sync
-
-#REDIS_HOST=127.0.0.1
-#REDIS_PASSWORD=null
-#REDIS_PORT=6379
 
 #DB_CONNECTION=pgsql
 #DB_HOST=db-int.example.com
@@ -20,16 +16,20 @@ QUEUE_DRIVER=sync
 #DB_USERNAME=user_example
 #DB_PASSWORD=password_example
 
+#REDIS_HOST=127.0.0.1
+#REDIS_PASSWORD=null
+#REDIS_PORT=6379
+
 DB_CONNECTION=pgsql
 DB_HOST=private-pg-example-do-user-109433-0.b.db.ondigitalocean.com
 DB_PORT=25060
 DB_DATABASE=defaultdb
 DB_USERNAME=doadmin
-DB_PASSWORD=j7f8nuouvy50aih0
+DB_PASSWORD=oie3hv6bgyn2ubtn
 
 REDIS_HOST=private-redis-example-do-user-109433-0.b.db.ondigitalocean.com
 REDIS_PASSWORD=25061
-REDIS_PORT=ohlvujbnkqduu4rb
+REDIS_PORT=qvkpta852dzgkzi9
 
 MAIL_DRIVER=smtp
 MAIL_HOST=smtp.mailtrap.io

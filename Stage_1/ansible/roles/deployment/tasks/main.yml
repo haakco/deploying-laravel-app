@@ -54,7 +54,7 @@
     group: www-data
     mode: 0640
 
-- name: Make sure the laravle directory is owned by www-data
+- name: Make sure the laravel directory is owned by www-data
   ansible.builtin.file:
     path: /var/www
     state: directory
@@ -75,6 +75,7 @@
   ansible.builtin.shell:
     chdir: /var/www/site
     cmd: yes | php artisan migrate
+  run_once: true
 
 - name: Run any db seed
   become: yes
@@ -82,5 +83,13 @@
   ansible.builtin.shell:
     chdir: /var/www/site
     cmd: yes | php artisan db:seed
+    creates: /var/www/seed_has_run
+  run_once: true
+
+- name: Touch a file so the seed is only run once.
+  ansible.builtin.file:
+    path: /var/www/seed_has_run
+    state: touch
+    mode: u=rw,g=r,o=r
 
 

@@ -774,7 +774,7 @@ Finally, we need to copy the .env file over, do a composer install, and an artis
     group: www-data
     mode: 0640
 
-- name: Make sure the laravle directory is owned by www-data
+- name: Make sure the laravel directory is owned by www-data
   ansible.builtin.file:
     path: /var/www
     state: directory
