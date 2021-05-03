@@ -3,7 +3,7 @@
   vars:
     bootstrap: true
     ansible_user: root
-    domain_name: custd.com
+    domain_name: example.com
     letsencrypt_email: certbot@example.com
     php_ver: 7.4
   roles:
