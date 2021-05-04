@@ -1,0 +1,12 @@
+/site/web/storage/logs/laravel.log
+{
+        weekly
+        missingok
+        rotate 7
+        compress
+        delaycompress
+        nomail
+        notifempty
+        copytruncate
+        size 250M
+}

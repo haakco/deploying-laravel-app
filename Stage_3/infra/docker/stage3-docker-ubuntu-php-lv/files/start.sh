@@ -41,7 +41,6 @@ export PHP_OPCACHE_PRELOAD_FILE=${PHP_OPCACHE_PRELOAD_FILE:-""}
 
 export COMPOSER_PROCESS_TIMEOUT=${COMPOSER_PROCESS_TIMEOUT:-2000}
 
-
 sed -i \
   -e "s@date.timezone =.*@date.timezone = ${PHP_TIMEZONE}@" \
   -e "s/upload_max_filesize = .*/upload_max_filesize = ${PHP_UPLOAD_MAX_FILESIZE}/" \
@@ -63,7 +62,7 @@ sed -i \
 if [[ "${PHP_OPCACHE_PRELOAD_FILE}" != "" ]]; then
   sed -i \
     -e "s#;opcache.preload=.*#opcache.preload=${PHP_OPCACHE_PRELOAD_FILE}#" \
-    -e "s#;opcache.preload_user=.*#opcache.preload_user=web#" \
+    -e "s#;opcache.preload_user=.*#opcache.preload_user=www-data#" \
     /etc/php/"${PHP_VERSION}"/fpm/php.ini
 fi
 
@@ -91,13 +90,17 @@ else
   sed -E -i -e 's/ENABLE_SSH/0/' /supervisord.conf
 fi
 
+mkdir -p /root/.ssh/
 chmod 700 /root/.ssh
+ssh-keyscan github.com >> /root/.ssh/known_hosts
+chmod 600 /root/.ssh/
+touch /root/.ssh/authorized_keys
+chmod 600 /root/.ssh/authorized_keys
 
 if [[ ! -z "${SSH_AUTHORIZED_KEYS}" ]];then
   echo "${SSH_AUTHORIZED_KEYS}" > /root/.ssh/authorized_keys
 fi
 
-chown root: /root/.ssh/authorized_keys
 chmod 600 /root/.ssh/authorized_keys
 
 cat > ${TEMP_CRON_FILE} <<- EndOfMessage
@@ -105,13 +108,13 @@ cat > ${TEMP_CRON_FILE} <<- EndOfMessage
 0 * * * * /usr/sbin/logrotate -vf /etc/logrotate.d/*.auto 2>&1 | /dev/stdout
 
 #rename on start
-@reboot find /var/www -not -user web -execdir chown "web:" {} \+ | /dev/stdout
+@reboot find /var/www -not -user www-data -execdir chown "www-data:" {} \+ | /dev/stdout
 
 EndOfMessage
 
 if [[ "${CRONTAB_ACTIVE}" = "TRUE" ]]; then
  cat >> ${TEMP_CRON_FILE} <<- EndOfMessage
-* * * * * su web -c '/usr/bin/php /var/www/site/artisan schedule:run' 2>&1 >> /var/log/cron.log
+* * * * * su www-data -c '/usr/bin/php /var/www/site/artisan schedule:run' 2>&1 >> /var/log/cron.log
 EndOfMessage
 fi
 
@@ -135,16 +138,18 @@ if [[ "${GEN_LV_ENV}" = "TRUE" ]]; then
   env | grep 'LVENV_' | sort | sed -E -e 's/"/\\"/g' -e 's#LVENV_(.*)=#\1=#' -e 's#=(.+)#="\1"#' > /var/www/site/.env
 fi
 
+composer config --global process-timeout "${COMPOSER_PROCESS_TIMEOUT}"
+
 # Try to fix rsyslogd: file '/dev/stdout': open error: Permission denied
 chmod -R a+w /dev/stdout
 chmod -R a+w /dev/stderr
 chmod -R a+w /dev/stdin
 
 if [[ -e "${INITIALISE_FILE}" ]]; then
-  chown web: "${INITIALISE_FILE}"
+  chown www-data: "${INITIALISE_FILE}"
   chmod u+x "${INITIALISE_FILE}"
   chmod a+r /root/.composer
-  su web --preserve-environment -c "${INITIALISE_FILE}" >> /var/log/initialise.log
+  su www-data --preserve-environment -c "${INITIALISE_FILE}" >> /var/log/initialise.log
 fi
 
 ## Rotate logs at start just in case

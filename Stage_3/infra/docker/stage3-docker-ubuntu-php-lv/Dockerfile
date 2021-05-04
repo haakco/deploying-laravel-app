@@ -33,6 +33,7 @@ RUN apt update && \
         bash-completion \
         ca-certificates \
         inetutils-ping inetutils-tools \
+        logrotate \
         mysql-client \
         postgresql-client \
         rsyslog \
@@ -82,11 +83,12 @@ RUN add-apt-repository -y ppa:nginx/stable && \
         && \
     apt-get -y autoremove && \
     apt-get -y clean && \
+    rm -rf /etc/nginx/sites-enabled/default && \
     rm -rf /var/lib/apt/lists/* && \
     rm -rf /var/tmp/* && \
     rm -rf /tmp/*
 
-ADD ./files/nginx_config /etc/nginx/config
+ADD ./files/nginx_config /etc/nginx
 
 RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" && \
     php composer-setup.php --install-dir=/bin --filename=composer && \
@@ -138,6 +140,7 @@ RUN chmod -R a+w /dev/stdout && \
     usermod -a -G tty syslog && \
     usermod -a -G tty  www-data
 
+ADD ./files/logrotate.d/ /etc/logrotate.d/
 ADD ./files/run_with_env.sh /bin/run_with_env.sh
 ADD ./files/start.sh /start.sh
 ADD ./files/supervisord_base.conf /supervisord_base.conf
