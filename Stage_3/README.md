@@ -51,7 +51,7 @@ We'll then use this image to create our final image for deployment.
 
 We split the images to save us time rebuilding the whole image every time we do a code change.
 
-The final docker file and anything needed to build it can be found at [```./infra/docker/ubuntu-php-lv-docker/```](infra/docker/stage3-docker-ubuntu-php-lv/)
+The final docker file and anything needed to build it can be found at [```./infra/docker/stage3-docker-ubuntu-php-lv/```](infra/docker/stage3-docker-ubuntu-php-lv)
 
 To make future upgrading easier, we'll use a variable for PHP and Ubuntu versions.
 
@@ -174,7 +174,7 @@ We'll then copy them into the image during the build.
 
 The config files can be found here.
 
-[```./infra/docker/ubuntu-php-lv-docker/files/nginx_config```](infra/docker/stage3-docker-ubuntu-php-lv/files/nginx_config)
+[```./infra/docker/stage3-docker-ubuntu-php-lv/files/nginx_config```](infra/docker/stage3-docker-ubuntu-php-lv/files/nginx_config)
 
 We then add the copy to our docker file.
 
@@ -207,6 +207,3 @@ RUN apt-get -o update && \
     rm -rf /var/tmp/* && \
     rm -rf /tmp/*
 ```
-
-
-
