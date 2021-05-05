@@ -1,4 +1,4 @@
-/site/web/storage/logs/laravel.log
+/var/www/site/storage/logs/laravel.log
 {
         weekly
         missingok

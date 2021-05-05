@@ -5,13 +5,14 @@ mkdir -p /run/php
 
 export TEMP_CRON_FILE='/var/www/cronFile'
 
-export PHP_VERSION=${PHP_VERSION:-7.4}
 
+## All the following setting can be overwritten by passing environmental variables on the docker run
+export PHP_VERSION=${PHP_VERSION:-7.4}
 
 export CRONTAB_ACTIVE=${CRONTAB_ACTIVE:-FALSE}
 export ENABLE_DEBUG=${ENABLE_DEBUG:-FALSE}
 
-export INITIALISE_FILE=${INITIALISE_FILE:-'7.4'}
+export INITIALISE_FILE=${INITIALISE_FILE:-'/var/www'}
 
 export GEN_LV_ENV=${GEN_LV_ENV:-FALSE}
 export LV_DO_CACHING=${LV_DO_CACHING:-FALSE}
@@ -21,7 +22,6 @@ export ENABLE_SIMPLE_QUEUE=${ENABLE_SIMPLE_QUEUE:-FALSE}
 export SIMPLE_WORKER_NUM=${SIMPLE_WORKER_NUM:-5}
 
 export ENABLE_SSH=${ENABLE_SSH:-FALSE}
-
 
 export PHP_TIMEZONE=${PHP_TIMEZONE:-"UTC"}
 export PHP_UPLOAD_MAX_FILESIZE=${PHP_UPLOAD_MAX_FILESIZE:-"128M"}
@@ -90,6 +90,8 @@ else
   sed -E -i -e 's/ENABLE_SSH/0/' /supervisord.conf
 fi
 
+sed -E -i -e "s/PHP_VERSION/${PHP_VERSION}/g" /supervisord.conf
+
 mkdir -p /root/.ssh/
 chmod 700 /root/.ssh
 ssh-keyscan github.com >> /root/.ssh/known_hosts
@@ -122,16 +124,8 @@ cat ${TEMP_CRON_FILE} | crontab -
 
 rm ${TEMP_CRON_FILE}
 
-sed -E -i -e "s/PHP_VERSION/${PHP_VERSION}/g" /supervisord.conf
-
-#if [[ "${ENABLE_DEBUG}" != "TRUE" ]]; then
-#  rm -rf /etc/php/"${PHP_VERSION}"/fpm/conf.d/10-xdebug.ini
-#  rm -rf /etc/php/"${PHP_VERSION}"/cli/conf.d/10-xdebug.ini
-#fi
-
 if [[ "${ENABLE_DEBUG}" = "TRUE" ]]; then
-  ln -sf /etc/php/"${PHP_VERSION}"/mods-available/10-xdebug.ini /etc/php/"${PHP_VERSION}"/fpm/conf.d/10-xdebug.ini && \
-  ln -sf /etc/php/"${PHP_VERSION}"/mods-available/10-xdebug.ini /etc/php/"${PHP_VERSION}"/cli/conf.d/10-xdebug.ini
+  phpenmod -v "${PHP_VERSION}" xdebug
 fi
 
 if [[ "${GEN_LV_ENV}" = "TRUE" ]]; then
@@ -148,7 +142,8 @@ chmod -R a+w /dev/stdin
 if [[ -e "${INITIALISE_FILE}" ]]; then
   chown www-data: "${INITIALISE_FILE}"
   chmod u+x "${INITIALISE_FILE}"
-  chmod a+r /root/.composer
+  mkdir /root/.composer /var/www/.composer
+  chmod a+r /root/.composer /var/www/.composer
   su www-data --preserve-environment -c "${INITIALISE_FILE}" >> /var/log/initialise.log
 fi
 
