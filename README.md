@@ -46,3 +46,9 @@ With this stage we are going to continue with our automation and automate the fu
 using terraform and packer to build our images.
 
 [Follow along here Stage 2](./Stage_2/README.md)
+
+### [Stage 3](./Stage_3/README.md)
+For this stage, we'll move to create docker containers. Having versioned containers makes it simpler, role forward and backwards.
+It also gives us a way to test locally on a system that is close to production.
+
+[Follow along here Stage 3](./Stage_3/README.md)

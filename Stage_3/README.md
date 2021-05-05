@@ -1,15 +1,15 @@
-# Stage 2: The different stages to learning how to deploy a Laravel App
+# Stage 3: The different stages to learning how to deploy a Laravel App
 
 ## Intro
 
-For this stage we'll move to creating docker containers. This makes it simpler role forward and backwards.
+For this stage, we'll move to create docker containers. Having versioned containers makes it simpler, role forward and backwards.
 It also gives us a way to test locally on a system that is close to production.
 
 ### Pros
 
 * Very repeatable
 * Faster from nothing to fully setup
-* Can simply replicate the entire infrastructure for dev or staging.
+* Can replicate the entire infrastructure for dev or staging.
 * Everything documented.
 
 ### Cons
@@ -36,24 +36,24 @@ It also gives us a way to test locally on a system that is close to production.
 
 ## Steps 1: Build Docker Images
 
-For things like the database and Redis there is no need to build your own images.
+For things like the database and Redis, there is no need to build your images.
 
-Though for things like the PHP I find it helps as you can put exactly what you want into it.
+Though for things like PHP, I find it helps to put precisely what you want into it.
 
 ### Base PHP Docker Image
-We are going to start by creating a base image for our PHP. 
+We are going to start by creating a base image for our PHP.
 
-This will have all the libraries, and we need, and it will have NGINX built in to make our lives easier.
+The image will have all the libraries and we need, and it will have NGINX built in to make our lives easier.
 
 This image will hold everything required except the Laravel code.
 
-We'll then use this image to create our final image for deployment. 
+We'll then use this image to create our final image for deployment.
 
-We split the images to save us time in having to rebuild the full image every time we do a code change.
+We split the images to save us time rebuilding the whole image every time we do a code change.
 
 The final docker file and anything needed to build it can be found at [```./infra/docker/ubuntu-php-lv-docker/```](infra/docker/stage3-docker-ubuntu-php-lv/)
 
-To make future upgrading easier we'll use variable for things like PHP version and Ubuntu version.
+To make future upgrading easier, we'll use a variable for PHP and Ubuntu versions.
 
 Bellow is the top of our Docker file where we set these.
 
@@ -78,22 +78,22 @@ RUN echo "PHP_VERSION=${PHP_VERSION}" && \
     echo ""
 ```
 
-After this we just follow either the steps we have from any of the earlier stages. 
+After this, we follow either the steps we have from any of the earlier stages.
 
-I'm mainly following the installation script we used in Stage_0. (Remember how I said you'll be re-using this)
+I'm mainly following the installation script we used in Stage_0. (Remember how I said you'd be re-using this)
 
 For refrence the install script is here [```../Stage_0/setupCommands.sh```](../Stage_0/setupCommands.sh)
 
-The one exception is we don't have to generate the SSL certificate as we'll do that with a proxy that we'll run
+The one exception is we don't have to generate the SSL certificate, as we'll do that with a proxy that we'll run
 in front of the server.
 
 We'll also set some flags to speed up the apt install.
 
-So lets first make sure the Ubuntu is fully up to date.
+So let's first make sure the Ubuntu is entirely up to date.
 
 We also install some base required packages.
 
-You'll see after each run command we do a cleanup. This is to keep each layer as small as possible.
+You'll see after each run command, we do a cleanup to keep each layer as small as possible.
 
 ```dockerfile
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections && \
@@ -117,7 +117,7 @@ RUN apt update && \
     rm -rf /tmp/*
 ```
 
-Next we want to install PHP
+Next, we want to install PHP.
 
 ```dockerfile
 RUN add-apt-repository -y ppa:ondrej/php && \
@@ -146,7 +146,7 @@ RUN add-apt-repository -y ppa:ondrej/php && \
     rm -rf /tmp/*
 ```
 
-Now lets install Nginx.
+Now let us install Nginx.
 
 ```dockerfile
 RUN add-apt-repository -y ppa:nginx/stable && \
@@ -166,15 +166,15 @@ RUN add-apt-repository -y ppa:nginx/stable && \
 
 We'll need a config for the server.
 
-For this we'll create a files directory and add the config files for Nginx in a subdirectory.
+For this, we'll create a files directory and add the config files for Nginx in a subdirectory.
 
-One thing to note is that we send the Nginx logs to stdout and stderr. This allows for simpler access to the logs.
+One thing to note is that we send the Nginx logs to stdout and stderr, allowing more straightforward access to the logs.
 
 We'll then copy them into the image during the build.
 
-The config files can be found here. 
+The config files can be found here.
 
-  [```./infra/docker/ubuntu-php-lv-docker/files/nginx_config```](infra/docker/stage3-docker-ubuntu-php-lv/files/nginx_config)
+[```./infra/docker/ubuntu-php-lv-docker/files/nginx_config```](infra/docker/stage3-docker-ubuntu-php-lv/files/nginx_config)
 
 We then add the copy to our docker file.
 
@@ -182,7 +182,7 @@ We then add the copy to our docker file.
 ADD ./files/nginx_config /site/nginx/config
 ```
 
-Next we want to install composer
+Next, we want to install the composer.
 
 ```dockerfile
 RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" && \
@@ -190,13 +190,13 @@ RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" &&
     php -r "unlink('composer-setup.php');"
 ```
 
-To allow for some simpler debugging we're going to add ssh. This allows tools like Tinkerwell to connect.
+To allow for some simpler debugging, we're going to add ssh, allowing tools like Tinkerwell to connect.
 
 ```dockerfile
 # Add openssh
-RUN apt-get -o Acquire::http::proxy="$PROXY" update && \
-    apt-get -o Acquire::http::proxy="$PROXY" -qy dist-upgrade && \
-    apt-get -o Acquire::http::proxy="$PROXY" install -qy \
+RUN apt-get -o update && \
+    apt-get -o -qy dist-upgrade && \
+    apt-get -o install -qy \
       openssh-server \
       && \
     ssh-keygen -A && \
