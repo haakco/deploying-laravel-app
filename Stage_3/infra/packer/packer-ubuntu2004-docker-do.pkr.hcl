@@ -4,6 +4,12 @@ variable "do_api_token" {
   sensitive = true
 }
 
+variable "cf_api_token" {
+  type = string
+  default = "${env("CLOUDFLARE_API_TOKEN")}"
+  sensitive = true
+}
+
 variable "image_name" {
   type = string
   default = "ubuntu-20-04-x64"
@@ -28,7 +34,7 @@ source "digitalocean" "ubuntu_image" {
   image = "${var.image_name}"
   region = "${var.region_name}"
   size = "${var.size}"
-  snapshot_name = "lv-example-${var.image_name}-${var.region_name}-${local.timestamp}"
+  snapshot_name = "lv-example-docker-${var.image_name}-${var.region_name}-${local.timestamp}"
   ssh_username = "root"
 }
 

@@ -1,0 +1,9 @@
+{
+  "experimental": true,
+  "log-driver": "json-file",
+  "log-opts": {"max-size": "1G", "max-file": "3"},
+  "exec-opts": ["native.cgroupdriver=systemd"],
+  "storage-driver": "overlay2",
+  {{ DOCKER_DAEMON_EXTRA_OPTIONS[ansible_hostname] | default('') }}
+  "debug": false
+}

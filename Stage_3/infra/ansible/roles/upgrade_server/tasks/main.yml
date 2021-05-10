@@ -1,0 +1,8 @@
+---
+- name: Update on debian-based distros
+  apt:
+    upgrade: dist
+    cache_valid_time: 600
+    update_cache: yes
+    autoremove: yes
+    dpkg_options: 'force-confold,force-confnew'
