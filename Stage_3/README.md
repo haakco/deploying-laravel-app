@@ -570,7 +570,7 @@ if [[ -e "${INITIALISE_FILE}" ]]; then
 fi
 ```
 
-Finally we do a quick logrotate just in case and start supervisor.
+Finally, we do a quick logrotate just in case and start supervisor.
 
 ```shell
 ## Rotate logs at start just in case
@@ -578,3 +578,58 @@ Finally we do a quick logrotate just in case and start supervisor.
 
 /usr/bin/supervisord -n -c /supervisord.conf
 ```
+
+### Simple local dev enviroment
+Ok in this step we are going to set up a local dev enviroment using the php image we created above.
+
+We'll also spin up a Redis and MySQL. Though for those we'll use the default images on [docker hub](https://hub.docker.com/).
+
+I'm going to first show you how to do this via the command line.
+
+I'll then give you docker-compose files to do this. 
+
+The compose files are slightly easier to ready for people who are not used to command line.
+
+#### Docker compose
+
+To make things a bit simpler to manage and read I'll be using docker-compose files to set things up.
+
+Let's first add the database.
+
+We'll be using the default [PostgreSQL docker hub image](https://hub.docker.com/_/postgres), and we'll be using tag 13.
+
+We are specifying a specific tag to prevent things breaking if the default version for Postgres increases. 
+
+```yaml
+version: '3.9'
+services:
+  pgmaster:
+    image: postgres:13
+    hostname: pgmaster.server
+    restart: always
+    environment:
+      - "POSTGRES_DB=db_example"
+      - "POSTGRES_USER=user_example"
+      - "POSTGRES_PASSWORD=password_example"
+    ports:
+      - "5432:5432"
+    volumes:
+      - "db_pgmaster_vol:/var/lib/postgresql/data"
+volumes:
+  db_pgmaster_vol: {}
+```
+
+Next we want to add our
+
+```shell
+git clone https://github.com/thedevdojo/wave ./wave
+```
+
+```shell
+docker-compose --project-name example up -d
+```
+
+```shell
+docker-compose --project-name example down --remove-orphan
+```
+

@@ -158,7 +158,7 @@ setLvDepProfile() {
 }
 ```
 
-## Steps 2: Build base image
+## Steps 2: Build base sever image
 
 Ok, now that we have our tokens, we are going to create a server image.
 

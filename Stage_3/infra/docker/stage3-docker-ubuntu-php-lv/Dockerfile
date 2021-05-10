@@ -172,7 +172,7 @@ ADD ./files/initialise.sh /var/www/initialise.sh
 ADD ./files/start.sh /start.sh
 ADD ./files/supervisord_base.conf /supervisord_base.conf
 
-RUN chown www-data: /var/www/initialise.sh && \
+RUN chown www-data: -R /var/www/initialise.sh /var/www && \
     chmod a+x /var/www/initialise.sh && \
     chmod a+x /start.sh
 
@@ -181,7 +181,7 @@ RUN chmod -R a+w /dev/stdout && \
     chmod -R a+w /dev/stderr && \
     chmod -R a+w /dev/stdin && \
     usermod -a -G tty syslog && \
-    usermod -a -G tty  www-data && \
+    usermod -a -G tty www-data && \
     find /var/www -not -user www-data -execdir chown "www-data" {} \+
 
 WORKDIR /var/www/site

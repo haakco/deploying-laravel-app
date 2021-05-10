@@ -166,3 +166,4 @@ cd /var/www/site
 sudo su -p -l www-data -s /bin/bash -c "cd /var/www/site && composer install"
 sudo su -p -l www-data -s /bin/bash -c "cd /var/www/site && php artisan key:generate"
 sudo su -p -l www-data -s /bin/bash -c "cd /var/www/site && php artisan migrate"
+sudo su -p -l www-data -s /bin/bash -c "cd /var/www/site && php artisan db:seed"

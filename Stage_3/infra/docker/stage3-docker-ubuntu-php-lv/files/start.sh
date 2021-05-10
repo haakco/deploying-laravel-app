@@ -41,6 +41,11 @@ export PHP_OPCACHE_PRELOAD_FILE=${PHP_OPCACHE_PRELOAD_FILE:-""}
 
 export COMPOSER_PROCESS_TIMEOUT=${COMPOSER_PROCESS_TIMEOUT:-2000}
 
+
+# Make sure files are owned correctly
+chown www-data: /var/www
+find /var/www -not -user www-data -execdir chown "www-data" {} \+
+
 sed -i \
   -e "s@date.timezone =.*@date.timezone = ${PHP_TIMEZONE}@" \
   -e "s/upload_max_filesize = .*/upload_max_filesize = ${PHP_UPLOAD_MAX_FILESIZE}/" \
@@ -65,6 +70,29 @@ if [[ "${PHP_OPCACHE_PRELOAD_FILE}" != "" ]]; then
     -e "s#;opcache.preload_user=.*#opcache.preload_user=www-data#" \
     /etc/php/"${PHP_VERSION}"/fpm/php.ini
 fi
+
+sed -Ei \
+  -e "s/error_log = .*/error_log = syslog/" \
+  -e "s/.*syslog\.ident = .*/syslog.ident = php-fpm/" \
+  -e "s/.*log_buffering = .*/log_buffering = yes/" \
+  /etc/php/${PHP_VERSION}/fpm/php-fpm.conf
+echo "request_terminate_timeout = 600" >> /etc/php/${PHP_VERSION}/fpm/php-fpm.conf
+
+sed -Ei \
+  -e "s/^user = .*/user = www-data/" \
+  -e "s/^group = .*/group = www-data/" \
+  -e 's/listen\.owner.*/listen.owner = www-data/' \
+  -e 's/listen\.group.*/listen.group = www-data/' \
+  -e 's/.*listen\.backlog.*/listen.backlog = 65536/' \
+  -e "s/pm\.max_children = .*/pm.max_children = 32/" \
+  -e "s/pm\.start_servers = .*/pm.start_servers = 4/" \
+  -e "s/pm\.min_spare_servers = .*/pm.min_spare_servers = 4/" \
+  -e "s/pm\.max_spare_servers = .*/pm.max_spare_servers = 16/" \
+  -e "s/.*pm\.max_requests = .*/pm.max_requests = 0/" \
+  -e "s/.*pm\.status_path = .*/pm.status_path = \/fpm-status/" \
+  -e "s/.*ping\.path = .*/ping.path = \/fpm-ping/" \
+  -e 's/\/run\/php\/.*fpm.sock/\/run\/php\/fpm.sock/' \
+  /etc/php/${PHP_VERSION}/fpm/pool.d/www.conf
 
 cp /supervisord_base.conf /supervisord.conf
 
@@ -144,6 +172,7 @@ if [[ -e "${INITIALISE_FILE}" ]]; then
   chmod u+x "${INITIALISE_FILE}"
   mkdir /root/.composer /var/www/.composer
   chmod a+r /root/.composer /var/www/.composer
+  chown -R www-data: /var/www/.composer
   su www-data --preserve-environment -c "${INITIALISE_FILE}" >> /var/log/initialise.log
 fi
 
