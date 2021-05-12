@@ -35,6 +35,7 @@ services:
       - "CLOUDFLARE_API_TOKEN=${CLOUDFLARE_API_TOKEN}"
     command:
       #- "--log.level=DEBUG"
+      - "--api"
       - "--api.insecure=true"
       - "--providers.docker.endpoint=unix:///var/run/docker.sock"
       - "--providers.docker=true"
@@ -49,13 +50,23 @@ services:
       - "--certificatesresolvers.le.acme.dnschallenge.resolvers=1.1.1.1:53,8.8.8.8:53,1.0.0.1:53"
       - "--certificatesresolvers.le.acme.dnschallenge.delaybeforecheck=20"
       - "--certificatesresolvers.le.acme.storage=/data/acme.json"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik.rule=Host(`traefik.$DOMAIN_NAME`)"
+      - "traefik.http.routers.traefik.entrypoints=websecure"
+      - "traefik.http.routers.traefik.service=api@internal"
+      - "traefik.http.routers.traefik.tls=true"
+      - "traefik.http.routers.traefik.tls.certresolver=le"
+      - "traefik.http.routers.traefik.middlewares=traefik-auth, traefik-compress"
+      - "traefik.http.middlewares.traefik-auth.basicauth.users=${TRAEFIK_BASIC_USER}:${TRAEFIK_BASIC_PASSWORD_ENCODED}"
+      - "traefik.http.middlewares.traefik-compress.compress=true"
     ports:
       - "80:80"
       - "443:443"
       - "8080:8080"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
-      - "traefik_vol:/data"
+      - "${PWD}/traefik:/data"
   website:
     image: haakco/stage3-ubuntu-20.04-php7.4-lv-docker
     container_name: "web"
@@ -74,7 +85,7 @@ services:
       - LVENV_APP_KEY=$APP_KEY
       - LVENV_APP_DEBUG=true
       - LVENV_APP_LOG_LEVEL=debug
-      - LVENV_APP_URL=https://dev.$DOMAIN_NAME
+      - LVENV_APP_URL=https://$DOMAIN_NAME
       - LVENV_DB_CONNECTION=pgsql
       - LVENV_DB_HOST=postgres
       - LVENV_DB_PORT=5432
@@ -105,6 +116,8 @@ services:
       - LVENV_WAVE_DOCS=true
       - LVENV_WAVE_DEMO=true
       - LVENV_WAVE_BAR=true
+      - LVENV_TRUSTED_PROXIES=$TRUSTED_PROXIES
+      - LVENV_ASSET_URL=' '
     ports:
       - "9080:9080"
     volumes:

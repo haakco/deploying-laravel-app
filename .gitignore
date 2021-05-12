@@ -293,5 +293,6 @@ crash.log
 *.box
 
 *ed25519*
+acme.json
 
 
