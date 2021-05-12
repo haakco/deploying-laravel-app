@@ -68,7 +68,7 @@ services:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
       - "${PWD}/traefik:/data"
   website:
-    image: haakco/stage3-ubuntu-20.04-php7.4-lv-docker
+    image: haakco/stage3-ubuntu-20.04-php7.4-lv
     container_name: "web"
     hostname: web.server
     restart: always
