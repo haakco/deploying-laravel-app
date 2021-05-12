@@ -109,6 +109,7 @@ services:
       - LVENV_PUSHER_APP_ID=
       - LVENV_PUSHER_APP_KEY=
       - LVENV_PUSHER_APP_SECRET=
+      - LVENV_REDIS_CLIENT=phpredis
       - LVENV_JWT_SECRET=$JWT_SECRET
       - LVENV_PADDLE_VENDOR_ID=
       - LVENV_PADDLE_VENDOR_AUTH_CODE=
@@ -121,7 +122,7 @@ services:
     ports:
       - "9080:9080"
     volumes:
-      - "${PWD}/wave/:/var/www/site"
+      - "$WAVE_DIR:/var/www/site"
 volumes:
   postgres_vol: {}
   db_redis_vol: {}

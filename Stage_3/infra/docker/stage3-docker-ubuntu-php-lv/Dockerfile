@@ -30,14 +30,22 @@ RUN apt update && \
         dist-upgrade \
         && \
     apt-get install -qy \
-        bash-completion \
-        ca-certificates \
+        apt-transport-https \
+        bash-completion bzip2 \
+        ca-certificates cron curl \
+        dos2unix dnsutils \
+        git \
         inetutils-ping inetutils-tools \
+        jq \
         logrotate \
+        net-tools \
         mysql-client \
-        postgresql-client \
+        openssl \
+        postgresql-client procps psmisc \
         rsyslog \
-        software-properties-common sudo supervisor \
+        software-properties-common ssl-cert sudo supervisor \
+        tar \
+        unzip \
         vim \
         && \
     update-ca-certificates --fresh && \

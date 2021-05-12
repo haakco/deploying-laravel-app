@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+WAVE_DIR=$(realpath "${PWD}/wave")
+export WAVE_DIR
+
 export TRAEFIK_EMAIL=cert@custd.com
 export CLOUDFLARE_API_TOKEN=$CLOUDFLARE_API_TOKEN
 export DOMAIN_NAME=dev.custd.com
