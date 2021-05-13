@@ -36,7 +36,7 @@ resource "cloudflare_record" "A" {
   name = "@"
   type = "A"
 //  ttl = var.dns_ttl
-  proxied = true
+  proxied = false
   count  = length(digitalocean_droplet.web.*.ipv4_address)
   value  = element(digitalocean_droplet.web.*.ipv4_address, count.index)
 }
@@ -46,7 +46,27 @@ resource "cloudflare_record" "A-www" {
   name = "www"
   type = "A"
 //  ttl = var.dns_ttl
-  proxied = true
+  proxied = false
+  count  = length(digitalocean_droplet.web.*.ipv4_address)
+  value  = element(digitalocean_droplet.web.*.ipv4_address, count.index)
+}
+
+resource "cloudflare_record" "AAAA" {
+  zone_id = lookup(data.cloudflare_zones.dns-domain.zones[0], "id")
+  name = "@"
+  type = "AAAA"
+//  ttl = var.dns_ttl
+  proxied = false
+  count  = length(digitalocean_droplet.web.*.ipv4_address)
+  value  = element(digitalocean_droplet.web.*.ipv4_address, count.index)
+}
+
+resource "cloudflare_record" "AAAA-www" {
+  zone_id = lookup(data.cloudflare_zones.dns-domain.zones[0], "id")
+  name = "www"
+  type = "AAAA"
+//  ttl = var.dns_ttl
+  proxied = false
   count  = length(digitalocean_droplet.web.*.ipv4_address)
   value  = element(digitalocean_droplet.web.*.ipv4_address, count.index)
 }

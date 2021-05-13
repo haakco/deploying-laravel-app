@@ -1,0 +1,39 @@
+---
+
+- name: Make sure the docker PostgresSQL dir exists
+  ansible.builtin.file:
+    path: /docker/postgres
+    state: directory
+    recurse: yes
+    owner: 999
+    group: 999
+
+- name: Make sure the docker Redis dir exists
+  ansible.builtin.file:
+    path: /docker/redis
+    state: directory
+    recurse: yes
+    owner: 999
+    group: 999
+
+- name: Make sure the docker Redis dir exists
+  ansible.builtin.file:
+    path: /docker/traefik
+    state: directory
+    recurse: yes
+    owner: 999
+    group: 999
+
+- name: Sync docker directory to remote
+  synchronize:
+    src: remote_docker_prod
+    dest: /root/remote_docker_prod
+    delete: yes
+    recursive: yes
+
+- name: Start production docker on reboot
+  cron:
+    name: "Start production docker on reboot"
+    special_time: reboot
+    state: present
+    job: '/root/remote_docker_prod/runProd.sh 2>&1 | /usr/bin/logger -t DOCKER_START'
