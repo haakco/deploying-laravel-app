@@ -14,4 +14,5 @@ export TRAEFIK_BASIC_PASSWORD_RAW='aitada1eeM6oomie1oog'
 TRAEFIK_BASIC_PASSWORD_ENCODED=$(docker run --rm -ti xmartlabs/htpasswd "${TRAEFIK_BASIC_USER}" "${TRAEFIK_BASIC_PASSWORD_RAW}" | sed -E -e 's#.+\:(.+)#\1#' | xargs)
 export TRAEFIK_BASIC_PASSWORD_ENCODED
 
-docker-compose --project-name prod_example up -d
+cd /root/remote_docker_prod/ || exit
+/usr/local/bin/docker-compose --project-name prod_example up -d

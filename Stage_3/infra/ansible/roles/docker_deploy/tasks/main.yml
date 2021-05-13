@@ -27,7 +27,7 @@
 - name: Sync docker directory to remote
   synchronize:
     src: remote_docker_prod
-    dest: /root/remote_docker_prod
+    dest: /root/
     delete: yes
     recursive: yes
 

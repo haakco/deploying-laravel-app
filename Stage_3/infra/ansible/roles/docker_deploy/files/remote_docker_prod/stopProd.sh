@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-docker-compose --project-name example down --remove-orphan
+/usr/local/bin/docker-compose --project-name prod_example down --remove-orphan

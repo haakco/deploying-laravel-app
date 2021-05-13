@@ -2,5 +2,7 @@
 - hosts: all
   roles:
     - upgrade_server
+    - docker
+    - docker_deploy
   become: true
   gather_facts: true

@@ -4,9 +4,7 @@ services:
     image: "traefik:v2.4"
     container_name: "traefik"
     hostname: traefik.server
-    environment:
-      - "CF_DNS_API_TOKEN=${CLOUDFLARE_API_TOKEN}"
-      - "CLOUDFLARE_API_TOKEN=${CLOUDFLARE_API_TOKEN}"
+    restart: always
     command:
       #- "--log.level=DEBUG"
       - "--api"
@@ -38,6 +36,22 @@ services:
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
       - "/docker/traefik:/data"
+  ouroboros:
+    container_name: ouroboros
+    hostname: ouroboros
+    image: pyouroboros/ouroboros
+    restart: always
+    labels:
+      - "com.ouroboros.enable=true"
+    environment:
+      - CLEANUP=true
+      - INTERVAL=300
+      - LOG_LEVEL=info
+      - SELF_UPDATE=true
+      - LABEL_ENABLE=true
+      - LABELS_ONLY=true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
   postgres:
     image: postgres:13
     container_name: "postgres"
@@ -64,10 +78,12 @@ services:
       - "127.0.0.1:6379:6379"
     volumes:
       - "/docker/redis:/data"
+
   rediscommander:
     image: rediscommander/redis-commander:latest
     container_name: "rediscommander"
     hostname: rediscommander.server
+    restart: always
     environment:
       - "REDIS_HOSTS=lvredis:redis.server:6379"
     labels:
@@ -86,6 +102,7 @@ services:
     hostname: web.server
     restart: always
     labels:
+      - "com.ouroboros.enable=true"
       - "traefik.enable=true"
       - "traefik.http.routers.website.rule=Host(`$DOMAIN_NAME`,`www.$DOMAIN_NAME`)"
       - "traefik.http.routers.website.entrypoints=websecure"

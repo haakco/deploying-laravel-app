@@ -53,8 +53,22 @@
     cache_valid_time: 600
     name:
     - 'docker-ce'
-    - 'docker-compose'
     - 'cgroup-tools'
+
+- name: Make sure compose is not installed via apt
+  apt:
+    update_cache: yes
+    cache_valid_time: 600
+    state: absent
+    name:
+    - 'docker-compose'
+
+- name: Install docker python modules
+  pip:
+    name:
+      - docker-compose
+      - boto3
+    extra_args: ' --upgrade '
 
 - name: Start Docker
   service:
