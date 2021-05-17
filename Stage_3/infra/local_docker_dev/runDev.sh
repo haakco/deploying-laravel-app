@@ -2,9 +2,9 @@
 WAVE_DIR=$(realpath "${PWD}/wave")
 export WAVE_DIR
 
-export TRAEFIK_EMAIL=cert@custd.com
+export TRAEFIK_EMAIL=cert@example.com
 export CLOUDFLARE_API_TOKEN=$CLOUDFLARE_API_TOKEN
-export DOMAIN_NAME=dev.custd.com
+export DOMAIN_NAME=dev.example.com
 export DB_NAME=db_example
 export DB_USER=user_example
 export DB_PASS=password_example
