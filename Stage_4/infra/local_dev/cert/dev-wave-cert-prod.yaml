@@ -1,0 +1,13 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: wave-cert-prod
+spec:
+  commonName: dev.custd.com
+  secretName: wave-cert-prod-tls
+  dnsNames:
+    - dev.custd.com
+  issuerRef:
+    name: letsencrypt-production
+    kind: ClusterIssuer

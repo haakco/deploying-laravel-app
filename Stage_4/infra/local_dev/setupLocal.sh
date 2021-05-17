@@ -37,13 +37,29 @@ helm install \
   --version v1.1.1 \
   --set installCRDs=true
 
-helm install my-release \
+kubectl --namespace cert-manager apply -f ./cloudflare-apikey-secret.yaml
+kubectl --namespace cert-manager apply -f ./cert/acme-production.yaml
+kubectl --namespace cert-manager apply -f ./cert/acme-staging.yaml
+
+kubectl create namespace wave
+kubectl --namespace wave apply -f ./cert/dev-wave-cert-staging.yaml
+kubectl --namespace wave delete -f ./cert/dev-wave-cert-staging.yaml
+
+kubectl create namespace external-dns
+kubectl --namespace external-dns apply -f ./cloudflare-apikey-secret.yaml
+#kubectl --namespace external-dns delete -f ./cloudflare-apikey-secret.yaml
+
+helm install external-dns \
+  --namespace external-dns \
   --set provider=cloudflare \
-  --set txtOwnerId=HOSTED_ZONE_IDENTIFIER \
-  --set domainFilters[0]=custd.com \
+  --set domainFilters={custd.com} \
   --set cloudflare.proxied=true \
-  --set cloudflare.apiToken \
-  --set cloudflare.secretName \
+  --set cloudflare.secretName=cloudflare-apikey \
   bitnami/external-dns
+
+
+
+#helm uninstall external-dns \
+#  --namespace external-dns
 
 #  \ # (optional) enable the proxy feature of Cloudflare (DDOS protection, CDN...)
