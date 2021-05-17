@@ -295,7 +295,7 @@ crash.log
 *ed25519*
 acme.json
 
-*-secrets.yaml
-*-secrets.yml
+dns-secrets.yaml
 
-
+*secrets.yaml
+*secrets.yml
