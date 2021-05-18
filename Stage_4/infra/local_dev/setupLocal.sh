@@ -23,11 +23,12 @@ helm install metrics-server bitnami/metrics-server \
   --set extraArgs.kubelet-insecure-tls=true \
   --version v0.4.4
 
-helm uninstall \
-  --namespace kube-system \
-  metrics-server
+#helm uninstall \
+#  --namespace kube-system \
+#  metrics-server
 
 kubectl create namespace cert-manager
+#kubectl delete namespace cert-manager
 
 kubectl label namespace cert-manager certmanager.k8s.io/disable-validation=true
 helm install \
@@ -35,31 +36,68 @@ helm install \
   cert-manager \
   jetstack/cert-manager \
   --version v1.1.1 \
-  --set installCRDs=true
+  --set installCRDs=true \
+  --set prometheus.enabled=true \
+  --set prometheus.servicemonitor.enabled=true
+
+#helm uninstall \
+#  --namespace cert-manager \
+#  cert-manager
 
 kubectl --namespace cert-manager apply -f ./cloudflare-apikey-secret.yaml
 kubectl --namespace cert-manager apply -f ./cert/acme-production.yaml
 kubectl --namespace cert-manager apply -f ./cert/acme-staging.yaml
 
+#kubectl --namespace cert-manager delete -f ./cloudflare-apikey-secret.yaml
+#kubectl --namespace cert-manager delete -f ./cert/acme-production.yaml
+#kubectl --namespace cert-manager delete -f ./cert/acme-staging.yaml
+
+helm repo add traefik https://containous.github.io/traefik-helm-chart
+helm repo update
+kubectl create namespace traefik
+helm install \
+  -n traefik traefik \
+  traefik/traefik \
+  --values ./traefik/traefik-values.yaml
+
+#helm uninstall helm install \
+#  -n traefik traefik
+
+kubectl apply -f ./traefik/dev-traefik-cert.yaml
+#kubectl delete -f ./traefik/dev-traefik-cert.yaml
+
+kubectl apply -f ./traefik/traefik-ingres.yaml
+#kubectl delete -f ./traefik/traefik-ingres.yaml
+
 kubectl create namespace wave
 kubectl --namespace wave apply -f ./cert/dev-wave-cert-staging.yaml
-kubectl --namespace wave delete -f ./cert/dev-wave-cert-staging.yaml
+#kubectl --namespace wave delete -f ./cert/dev-wave-cert-staging.yaml
 
-kubectl create namespace external-dns
-kubectl --namespace external-dns apply -f ./cloudflare-apikey-secret.yaml
+#kubectl create namespace external-dns
+#kubectl delete namespace external-dns
+#kubectl --namespace external-dns apply -f ./cloudflare-apikey-secret.yaml
 #kubectl --namespace external-dns delete -f ./cloudflare-apikey-secret.yaml
 
-helm install external-dns \
-  --namespace external-dns \
-  --set provider=cloudflare \
-  --set domainFilters={custd.com} \
-  --set cloudflare.proxied=true \
-  --set cloudflare.secretName=cloudflare-apikey \
-  bitnami/external-dns
-
-
-
+#helm install external-dns \
+#  --namespace external-dns \
+#  --set provider=cloudflare \
+#  --set domainFilters={custd.com} \
+#  --set cloudflare.proxied=true \
+#  --set cloudflare.secretName=cloudflare-apikey \
+#  bitnami/external-dns
+#
 #helm uninstall external-dns \
 #  --namespace external-dns
 
-#  \ # (optional) enable the proxy feature of Cloudflare (DDOS protection, CDN...)
+
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
+
+#https://www.digitalocean.com/community/tutorials/how-to-set-up-digitalocean-kubernetes-cluster-monitoring-with-helm-and-prometheus-operator
+#http://www.dcasati.net/posts/installing-prometheus-on-kubernetes-v1.16.9/
+#https://docs.syseleven.de/metakube/en/metakube-accelerator/building-blocks/observability-monitoring/kube-prometheus-stack
+kubectl create namespace monitoring
+#kubectl delete namespace monitoring
+
+helm install prometheus-operator --namespace monitoring -f ./prometheus/prometheus-values.yaml prometheus-community/kube-prometheus-stack
+#helm uninstall prometheus-operator --namespace monitoring

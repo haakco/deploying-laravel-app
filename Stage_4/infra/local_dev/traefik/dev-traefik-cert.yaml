@@ -2,12 +2,12 @@
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: dev-wave-cert-prod
+  name: dev-traefik-cert
+  namespace: traefik
 spec:
-  commonName: dev.custd.com
-  secretName: dev-wave-cert-prod-tls
+  secretName: dev-traefik-cert-tls
   dnsNames:
-    - dev.custd.com
+    - traefik.dev.custd.com
   issuerRef:
     name: letsencrypt-production
     kind: ClusterIssuer

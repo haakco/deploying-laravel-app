@@ -2,10 +2,10 @@
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: wave-cert-stage
+  name: dev-wave-cert-stage
 spec:
   commonName: dev.custd.com
-  secretName: wave-cert-stage-tls
+  secretName: dev-wave-cert-stage-tls
   dnsNames:
     - dev.custd.com
   issuerRef:
