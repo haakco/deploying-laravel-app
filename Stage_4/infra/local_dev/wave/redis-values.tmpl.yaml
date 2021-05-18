@@ -1,0 +1,4 @@
+---
+architecture: standalone
+image:
+  pullPolicy: Always

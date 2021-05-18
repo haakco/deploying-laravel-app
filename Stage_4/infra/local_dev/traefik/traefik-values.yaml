@@ -1,3 +1,4 @@
+---
 metrics:
   prometheus:
     enabled: true
@@ -6,7 +7,9 @@ additionalArguments:
   - "--entrypoints.websecure.http.tls"
   - "--providers.kubernetesIngress.ingressClass=traefik-cert-manager"
   - "--ping"
-  - "--metrics.prometheus"
+  - "--metrics.prometheus=true"
+  - "--metrics.prometheus.addEntryPointsLabels=true"
+  - "--metrics.prometheus.addServicesLabels=true"
   - "--entryPoints.websecure.proxyProtocol.insecure=true"
   - >-
     --entryPoints.websecure.proxyProtocol.trustedIPs=127.0.0.1,10.10.0.0/16,172.17.0.0/12,173.245.48.0/20,103.21.244.0/22,

@@ -1,0 +1,10 @@
+---
+image:
+  tag: 13
+  pullPolicy: Always
+postgresqlDatabase: $DB_NAME
+postgresqlUsername: $DB_USER
+postgresqlPassword: $DB_PASS
+#existingSecret:
+metrics:
+  enabled: true

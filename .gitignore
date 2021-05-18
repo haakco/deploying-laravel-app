@@ -305,3 +305,5 @@ dns-secrets.yaml
 
 prometheus-ingres.yaml
 traefik-ingres.yaml
+postgresql-values.yaml
+redis-values.yaml

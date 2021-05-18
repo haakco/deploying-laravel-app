@@ -76,6 +76,8 @@ cat ./traefik/traefik-ingres.tmpl.yaml | envsubst > ./traefik/traefik-ingres.yam
 kubectl apply -f ./traefik/traefik-ingres.yaml
 #kubectl delete -f ./traefik/traefik-ingres.yaml
 
+kubectl apply -f ./traefik/traefik-monitoring.yml
+
 kubectl create namespace wave
 kubectl --namespace wave apply -f ./cert/dev-wave-cert-staging.yaml
 #kubectl --namespace wave delete -f ./cert/dev-wave-cert-staging.yaml
@@ -109,7 +111,7 @@ kubectl create namespace monitoring
 #kubectl delete namespace monitoring
 
 helm install \
-  prometheus-operator prometheus-community/kube-prometheus-stack\
+  prometheus-operator prometheus-community/kube-prometheus-stack \
   --namespace monitoring \
   --version 15.4.6 \
   -f ./prometheus/prometheus-values.yaml
@@ -126,4 +128,25 @@ kubectl apply -f ./prometheus/dev-prometheus-cert.yaml
 cat ./prometheus/prometheus-ingres.tmpl.yaml | envsubst > ./prometheus/prometheus-ingres.yaml
 kubectl apply -f ./prometheus/prometheus-ingres.yaml
 #kubectl delete -f ./prometheus/prometheus-ingres.yaml
+
+kubectl create namespace wave
+
+export DB_NAME=db_example
+export DB_USER=user_example
+export DB_PASS=password_example
+cat ./wave/postgresql-values.tmpl.yaml | envsubst > ./wave/postgresql-values.yaml
+
+helm install \
+  wave-postgresql bitnami/postgresql \
+  --namespace wave \
+  -f ./wave/postgresql-values.yaml
+#helm uninstall wave-postgresql --namespace wave
+
+cat ./wave/redis-values.tmpl.yaml | envsubst > ./wave/redis-values.yaml
+helm install \
+  wave-redis bitnami/redis \
+  --namespace wave \
+  -f ./wave/redis-values.yaml
+
+#helm uninstall wave-redis --namespace wave
 

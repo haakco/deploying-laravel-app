@@ -5,3 +5,9 @@ grafana:
 
 prometheus-node-exporter:
   hostRootFsMount: false
+
+prometheus:
+  prometheusSpec:
+    serviceMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false
+    ruleSelectorNilUsesHelmValues: false
