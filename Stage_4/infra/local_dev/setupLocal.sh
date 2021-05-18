@@ -5,10 +5,9 @@ kubectl create clusterrolebinding dashboard-admin-sa --clusterrole=cluster-admin
 helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/
 helm repo update
 helm install \
+  kubernetes-dashboard kubernetes-dashboard/kubernetes-dashboard \
   --namespace kube-system \
-  kubernetes-dashboard \
-  kubernetes-dashboard/kubernetes-dashboard \
-  --version v0.2.0
+  --version 4.1.0
 
 #kubectl describe secret $(kubectl get secrets | grep 'dashboard-admin' | awk '{print $1}')
 #kubectl proxy &
@@ -16,12 +15,13 @@ helm install \
 
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo update
-helm install metrics-server bitnami/metrics-server \
+helm install \
+  metrics-server bitnami/metrics-server \
   --namespace kube-system \
+  --version v5.8.7 \
   --set rbac.create=true \
   --set apiService.create=true \
-  --set extraArgs.kubelet-insecure-tls=true \
-  --version v0.4.4
+  --set extraArgs.kubelet-insecure-tls=true
 
 #helm uninstall \
 #  --namespace kube-system \
@@ -32,10 +32,9 @@ kubectl create namespace cert-manager
 
 kubectl label namespace cert-manager certmanager.k8s.io/disable-validation=true
 helm install \
+  cert-manager jetstack/cert-manager \
   --namespace cert-manager \
-  cert-manager \
-  jetstack/cert-manager \
-  --version v1.1.1 \
+  --version 1.3.1 \
   --set installCRDs=true \
   --set prometheus.enabled=true \
   --set prometheus.servicemonitor.enabled=true
@@ -56,8 +55,9 @@ helm repo add traefik https://containous.github.io/traefik-helm-chart
 helm repo update
 kubectl create namespace traefik
 helm install \
-  -n traefik traefik \
-  traefik/traefik \
+  traefik traefik/traefik \
+  --namespace traefik \
+  --version 9.1.1 \
   --values ./traefik/traefik-values.yaml
 
 #helm uninstall helm install \
@@ -85,13 +85,15 @@ kubectl --namespace wave apply -f ./cert/dev-wave-cert-staging.yaml
 #kubectl --namespace external-dns apply -f ./cloudflare-apikey-secret.yaml
 #kubectl --namespace external-dns delete -f ./cloudflare-apikey-secret.yaml
 
-#helm install external-dns \
+#helm install \
+#  external-dns bitnami/external-dns \
 #  --namespace external-dns \
+#  --version 5.0.0 \
 #  --set provider=cloudflare \
 #  --set domainFilters={custd.com} \
 #  --set cloudflare.proxied=true \
 #  --set cloudflare.secretName=cloudflare-apikey \
-#  bitnami/external-dns
+#
 #
 #helm uninstall external-dns \
 #  --namespace external-dns
@@ -106,5 +108,9 @@ helm repo update
 kubectl create namespace monitoring
 #kubectl delete namespace monitoring
 
-helm install prometheus-operator --namespace monitoring -f ./prometheus/prometheus-values.yaml prometheus-community/kube-prometheus-stack
+helm install \
+  prometheus-operator prometheus-community/kube-prometheus-stack\
+  --namespace monitoring \
+  --version 15.4.6 \
+  -f ./prometheus/prometheus-values.yaml
 #helm uninstall prometheus-operator --namespace monitoring
