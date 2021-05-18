@@ -69,7 +69,7 @@ kubectl apply -f ./traefik/dev-traefik-cert.yaml
 export TRAEFIK_USERNAME='traefik'
 export TRAEFIK_PASSWD='yairohchahKoo0haem0d'
 
-TRAEFIK_AUTH=$(docker run --rm -ti xmartlabs/htpasswd "traefik" "yairohchahKoo0haem0d" | openssl base64 -A)
+TRAEFIK_AUTH=$(docker run --rm -ti xmartlabs/htpasswd "${TRAEFIK_USERNAME}" "${TRAEFIK_PASSWD}" | openssl base64 -A)
 export TRAEFIK_AUTH
 
 cat ./traefik/traefik-ingres.tmpl.yaml | envsubst > ./traefik/traefik-ingres.yaml
@@ -114,3 +114,16 @@ helm install \
   --version 15.4.6 \
   -f ./prometheus/prometheus-values.yaml
 #helm uninstall prometheus-operator --namespace monitoring
+
+export PROMETHEUS_USERNAME="${TRAEFIK_USERNAME}"
+export PROMETHEUS_PASSWD="${TRAEFIK_PASSWD}"
+
+PROMETHEUS_AUTH=$(docker run --rm -ti xmartlabs/htpasswd "${PROMETHEUS_USERNAME}" "${PROMETHEUS_PASSWD}" | openssl base64 -A)
+export PROMETHEUS_AUTH
+
+kubectl apply -f ./prometheus/dev-prometheus-cert.yaml
+#kubectl delete -f ./prometheus/dev-prometheus-cert.yaml
+cat ./prometheus/prometheus-ingres.tmpl.yaml | envsubst > ./prometheus/prometheus-ingres.yaml
+kubectl apply -f ./prometheus/prometheus-ingres.yaml
+#kubectl delete -f ./prometheus/prometheus-ingres.yaml
+

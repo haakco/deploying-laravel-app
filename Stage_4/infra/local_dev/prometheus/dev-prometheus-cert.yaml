@@ -1,0 +1,16 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: dev-prometheus-cert
+  namespace: monitoring
+spec:
+  secretName: dev-prometheus-cert-tls
+  commonName: prometheus.dev.custd.com
+  dnsNames:
+    - prometheus.dev.custd.com
+    - alertmanager.dev.custd.com
+    - grafana.dev.custd.com
+  issuerRef:
+    name: letsencrypt-production
+    kind: ClusterIssuer

@@ -6,6 +6,7 @@ metadata:
   namespace: traefik
 spec:
   secretName: dev-traefik-cert-tls
+  commonName: traefik.dev.custd.com
   dnsNames:
     - traefik.dev.custd.com
   issuerRef:

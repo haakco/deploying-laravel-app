@@ -301,3 +301,7 @@ dns-secrets.yaml
 *secrets.yml
 *secret.yaml
 *secret.yml
+
+
+prometheus-ingres.yaml
+traefik-ingres.yaml
