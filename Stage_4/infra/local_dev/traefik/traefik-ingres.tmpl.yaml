@@ -19,7 +19,7 @@ metadata:
   name: dashboard-authsecret
   namespace: traefik
 data:
-  users: dHJhZWZpazokMnkkMDUkMkZQcFd6aGYuNnJtSzhMV2JMMGdwLko1ZGk1V2MwMFowZXkwUi5IcDY2STI1M0ZON3dkcy4NCg0K
+  users: $TRAEFIK_AUTH
 type: Opaque
 ---
 # Enable gzip compression

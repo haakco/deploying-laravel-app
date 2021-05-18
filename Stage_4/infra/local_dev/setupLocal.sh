@@ -66,6 +66,13 @@ helm install \
 kubectl apply -f ./traefik/dev-traefik-cert.yaml
 #kubectl delete -f ./traefik/dev-traefik-cert.yaml
 
+export TRAEFIK_USERNAME='traefik'
+export TRAEFIK_PASSWD='yairohchahKoo0haem0d'
+
+TRAEFIK_AUTH=$(docker run --rm -ti xmartlabs/htpasswd "traefik" "yairohchahKoo0haem0d" | openssl base64 -A)
+export TRAEFIK_AUTH
+
+cat ./traefik/traefik-ingres.tmpl.yaml | envsubst > ./traefik/traefik-ingres.yaml
 kubectl apply -f ./traefik/traefik-ingres.yaml
 #kubectl delete -f ./traefik/traefik-ingres.yaml
 
