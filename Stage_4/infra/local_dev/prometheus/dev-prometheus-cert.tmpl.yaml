@@ -6,11 +6,11 @@ metadata:
   namespace: monitoring
 spec:
   secretName: dev-prometheus-cert-tls
-  commonName: prometheus.dev.custd.com
+  commonName: prometheus.$DOMAIN
   dnsNames:
-    - prometheus.dev.custd.com
-    - alertmanager.dev.custd.com
-    - grafana.dev.custd.com
+    - prometheus.$DOMAIN
+    - alertmanager.$DOMAIN
+    - grafana.$DOMAIN
   issuerRef:
     name: letsencrypt-production
     kind: ClusterIssuer

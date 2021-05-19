@@ -4,11 +4,11 @@ kind: Certificate
 metadata:
   name: wave-cert-prod
 spec:
-  commonName: custd.com
+  commonName: $DOMAIN
   secretName: wave-cert-prod-tls
   dnsNames:
-    - custd.com
-    - www.custd.com
+    - $DOMAIN
+    - www.$DOMAIN
   issuerRef:
     name: letsencrypt-production
     kind: ClusterIssuer

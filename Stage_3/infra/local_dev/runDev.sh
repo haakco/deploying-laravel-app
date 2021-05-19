@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-WAVE_DIR=$(realpath "${PWD}/wave")
+WAVE_DIR=$(realpath "${PWD}/stage3-ubuntu-20.04-php7.4-lv-wave")
 export WAVE_DIR
 
 export TRAEFIK_EMAIL=cert@example.com

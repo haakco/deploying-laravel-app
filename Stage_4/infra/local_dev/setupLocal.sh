@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+export DOMAIN=dev.custd.com
+
 kubectl create serviceaccount dashboard-admin-sa
 kubectl create clusterrolebinding dashboard-admin-sa --clusterrole=cluster-admin --serviceaccount=default:dashboard-admin-sa
 
@@ -63,6 +65,7 @@ helm install \
 #helm uninstall helm install \
 #  -n traefik traefik
 
+cat ./traefik/dev-traefik-cert.tmpl.yaml | envsubst > ./traefik/dev-traefik-cert.yaml
 kubectl apply -f ./traefik/dev-traefik-cert.yaml
 #kubectl delete -f ./traefik/dev-traefik-cert.yaml
 
@@ -77,29 +80,6 @@ kubectl apply -f ./traefik/traefik-ingres.yaml
 #kubectl delete -f ./traefik/traefik-ingres.yaml
 
 kubectl apply -f ./traefik/traefik-monitoring.yml
-
-kubectl create namespace wave
-kubectl --namespace wave apply -f ./cert/dev-wave-cert-staging.yaml
-#kubectl --namespace wave delete -f ./cert/dev-wave-cert-staging.yaml
-
-#kubectl create namespace external-dns
-#kubectl delete namespace external-dns
-#kubectl --namespace external-dns apply -f ./cloudflare-apikey-secret.yaml
-#kubectl --namespace external-dns delete -f ./cloudflare-apikey-secret.yaml
-
-#helm install \
-#  external-dns bitnami/external-dns \
-#  --namespace external-dns \
-#  --version 5.0.0 \
-#  --set provider=cloudflare \
-#  --set domainFilters={custd.com} \
-#  --set cloudflare.proxied=true \
-#  --set cloudflare.secretName=cloudflare-apikey \
-#
-#
-#helm uninstall external-dns \
-#  --namespace external-dns
-
 
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo update
@@ -123,11 +103,14 @@ export PROMETHEUS_PASSWD="${TRAEFIK_PASSWD}"
 PROMETHEUS_AUTH=$(docker run --rm -ti xmartlabs/htpasswd "${PROMETHEUS_USERNAME}" "${PROMETHEUS_PASSWD}" | openssl base64 -A)
 export PROMETHEUS_AUTH
 
+export DOMAIN=$DOMAIN
+cat ./prometheus/dev-prometheus-cert.tmpl.yaml | envsubst > ./prometheus/dev-prometheus-cert.yaml
 kubectl apply -f ./prometheus/dev-prometheus-cert.yaml
 #kubectl delete -f ./prometheus/dev-prometheus-cert.yaml
 cat ./prometheus/prometheus-ingres.tmpl.yaml | envsubst > ./prometheus/prometheus-ingres.yaml
 kubectl apply -f ./prometheus/prometheus-ingres.yaml
 #kubectl delete -f ./prometheus/prometheus-ingres.yaml
+
 
 kubectl create namespace wave
 
@@ -142,11 +125,51 @@ helm install \
   -f ./wave/postgresql-values.yaml
 #helm uninstall wave-postgresql --namespace wave
 
+export REDIS_PASS=password_example
+
 cat ./wave/redis-values.tmpl.yaml | envsubst > ./wave/redis-values.yaml
 helm install \
   wave-redis bitnami/redis \
   --namespace wave \
   -f ./wave/redis-values.yaml
+#helm uninstall wave-redis --namespace wave
+
+export APP_KEY=base64:8dQ7xw/kM9EYMV4cUkzKgET8jF4P0M0TOmmqN05RN2w=
+export APP_NAME=HaakCo Wave
+export APP_ENV=local
+export APP_DEBUG=true
+export APP_LOG_LEVEL=debug
+export DOMAIN_NAME=$DOMAIN
+export DB_HOST=wave-postgresql
+export DB_NAME=$DB_NAME
+export DB_USER=$DB_USER
+export DB_PASS=$DB_PASS
+export REDIS_HOST=wave-redis-master
+export REDIS_PASS=$REDIS_PASS
+export MAIL_HOST=smtp.mailtrap.io
+export MAIL_PORT=2525
+export MAIL_USERNAME=
+export MAIL_PASSWORD=
+export MAIL_ENCRYPTION=null
+export TRUSTED_PROXIES='10.0.0.0/8,172.16.0.0./12,192.168.0.0/16'
+export JWT_SECRET=Jrsweag3Mf0srOqDizRkhjWm5CEFcrBy
+
+WAVE_DIR=$(realpath "${PWD}/stage3-ubuntu-20.04-php7.4-lv-wave")
+export WAVE_DIR
+
+#export DOMAIN=$DOMAIN
+#cat ./cert/dev-test-cert-staging.tmpl.yaml | envsubst > ./cert/dev-test-cert-staging.yaml
+#kubectl --namespace wave apply -f ./cert/dev-test-cert-staging.yaml
+#kubectl --namespace wave delete -f ./cert/dev-test-cert-staging.yaml
+
+cat ./wave/dev-wave-cert-prod.tmpl.yaml | envsubst > ./wave/dev-wave-cert-prod.yaml
+kubectl --namespace wave apply -f ./wave/dev-wave-cert-prod.yaml
+#kubectl --namespace wave delete -f ./wave/dev-wave-cert-prod.yaml
+
+cat ./wave/wave.deploy.tmpl.yaml | envsubst > ./wave/wave.deploy.yaml
+kubectl apply \
+  --namespace wave \
+  -f ./wave/wave.deploy.yaml
 
 #helm uninstall wave-redis --namespace wave
 

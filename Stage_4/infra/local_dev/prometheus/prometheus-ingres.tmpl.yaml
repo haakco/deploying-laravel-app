@@ -36,7 +36,7 @@ spec:
   entryPoints:
     - websecure
   routes:
-    - match: Host(`prometheus.dev.custd.com`)
+    - match: Host(`prometheus.$DOMAIN`)
       kind: Rule
       services:
         - name: prometheus-operated
@@ -58,7 +58,7 @@ spec:
   entryPoints:
     - websecure
   routes:
-    - match: Host(`grafana.dev.custd.com`)
+    - match: Host(`grafana.$DOMAIN`)
       kind: Rule
       services:
         - name: prometheus-operator-grafana
@@ -78,7 +78,7 @@ spec:
   entryPoints:
     - websecure
   routes:
-    - match: Host(`alertmanager.dev.custd.com`)
+    - match: Host(`alertmanager.$DOMAIN`)
       kind: Rule
       services:
         - name: alertmanager-operated

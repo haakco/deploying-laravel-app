@@ -98,14 +98,14 @@ services:
       - "traefik.http.middlewares.website-compress.compress=true"
     environment:
       - GEN_LV_ENV=TRUE
-      - LVENV_APP_NAME=HaakCo Wave
-      - LVENV_APP_ENV=local
+      - LVENV_APP_NAME=$APP_NAME
+      - LVENV_APP_ENV=$APP_ENV
       - LVENV_APP_KEY=$APP_KEY
       - LVENV_APP_DEBUG=true
       - LVENV_APP_LOG_LEVEL=debug
       - LVENV_APP_URL=https://$DOMAIN_NAME
       - LVENV_DB_CONNECTION=pgsql
-      - LVENV_DB_HOST=postgres
+      - LVENV_DB_HOST=$DB_HOST
       - LVENV_DB_PORT=5432
       - LVENV_DB_DATABASE=$DB_NAME
       - LVENV_DB_USERNAME=$DB_USER
@@ -115,15 +115,15 @@ services:
       - LVENV_SESSION_DRIVER=redis
       - LVENV_SESSION_LIFETIME=9999
       - LVENV_QUEUE_DRIVER=redis
-      - LVENV_REDIS_HOST=redis.server
-      - LVENV_REDIS_PASSWORD=null
+      - LVENV_REDIS_HOST=$REDIS_HOST
+      - LVENV_REDIS_PASSWORD=$REDIS_PASS
       - LVENV_REDIS_PORT=6379
       - LVENV_MAIL_DRIVER=smtp
       - LVENV_MAIL_HOST=smtp.mailtrap.io
       - LVENV_MAIL_PORT=2525
-      - LVENV_MAIL_USERNAME=
-      - LVENV_MAIL_PASSWORD=
-      - LVENV_MAIL_ENCRYPTION=null
+      - LVENV_MAIL_USERNAME=$MAIL_USERNAME
+      - LVENV_MAIL_PASSWORD=$MAIL_PASSWORD
+      - LVENV_MAIL_ENCRYPTION=$MAIL_ENCRYPTION
       - LVENV_PUSHER_APP_ID=
       - LVENV_PUSHER_APP_KEY=
       - LVENV_PUSHER_APP_SECRET=
@@ -138,7 +138,7 @@ services:
       - LVENV_TRUSTED_PROXIES=$TRUSTED_PROXIES
       - LVENV_ASSET_URL=' '
     ports:
-      - "9080:9080"
+      - "9080:80"
     volumes:
       - "$WAVE_DIR:/var/www/site"
 volumes:
