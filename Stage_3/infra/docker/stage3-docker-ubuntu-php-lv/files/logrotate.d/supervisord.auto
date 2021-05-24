@@ -1,8 +1,0 @@
-site/logs/supervisor/*.log {
-  daily
-  rotate 60
-  copytruncate
-  compress
-  missingok
-  notifempty
-}

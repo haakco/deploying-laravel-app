@@ -1,6 +1,0 @@
----
-- hosts: all
-  roles:
-    - upgrade_server
-  become: true
-  gather_facts: true

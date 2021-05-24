@@ -1,6 +1,0 @@
----
-- hosts: database
-  roles:
-    - postgresql
-  become: true
-  gather_facts: true

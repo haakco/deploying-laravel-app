@@ -1,6 +1,0 @@
----
-- hosts: all
-  roles:
-    - docker_deploy
-  become: true
-  gather_facts: true
