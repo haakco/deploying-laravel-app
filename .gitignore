@@ -150,6 +150,8 @@ $RECYCLE.BIN/
 .idea/**/uiDesigner.xml
 .idea/**/dbnavigator.xml
 
+*.iml
+
 # Gradle
 .idea/**/gradle.xml
 .idea/**/libraries
