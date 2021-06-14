@@ -32,7 +32,7 @@ I'm sure that even the examples I have provided will not be optimal for come com
 1. You have a server.
 1. In this example and future ones, we'll be deploying to [DigitalOcean](https://m.do.co/c/179a47e69ec8)
    but the steps should mostly work with any servers.
-1. The server is running Ubuntu 20.04
+1. The server is running Ubuntu 20.04 or Kubernetes cluster.
 1. You have SSH key pair.
   1. Needed to log into your server securely.
 1. You have a Domain Name, and you can add entries to point to the server.
